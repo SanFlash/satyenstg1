@@ -27,3 +27,7 @@ Framework Vite; install `npm install`; build `npm run build`; output `dist`. No 
 
 ## Execution boundary
 A Vercel static site cannot control a user's OS pointer, keyboard or local browser session. Production execution requires a separately installed extension/desktop agent, secure pairing, origin allowlists, validated messages, cancellation semantics and an independent emergency stop. Connection controls are currently explicit demo placeholders, not live pairings.
+
+
+## Creator
+Created by **Satyendra Kumar Namdeo**.
