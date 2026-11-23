@@ -21,7 +21,7 @@ You do not need to type or run PowerShell commands. If Python is missing, the in
 2. It checks the Chrome registry entry, host manifest, Python, required modules, host script, and diagnostic log.
 3. If a log exists, it is at `%LOCALAPPDATA%\SatyTracker78\native-host.log`. Share the diagnostic output (you can redact your Windows username from file paths).
 
-The extension now checks the native host connection before opening the permission prompt, and the host writes startup/runtime failures to a log instead of hiding the reason.
+The extension now keeps the native messaging connection in the single Manifest V3 background service worker. The popup is only a control surface; closing it no longer immediately destroys the connection. The host explicitly switches Windows stdin/stdout to binary mode (required for length-prefixed Native Messaging frames) and writes startup/runtime failures to a log instead of hiding the reason. The installer verifies that both `tkinter` and `pynput` can be imported before registration.
 
 ## Remove
 
@@ -29,6 +29,6 @@ Double-click **`uninstall-easy.bat`** and restart Chrome.
 
 ## Scope and safety
 
-Supported native actions: move to screen coordinates, left click, type up to 500 characters, press a small allowlisted key set, and scroll within bounded deltas. This milestone adds the permission-gated native host and UI pairing control; existing browser recording/replay remains intact and is not silently redirected to OS input.
+Supported native actions: move to screen coordinates, left click, type up to 500 characters, press a small allowlisted key set, and scroll within bounded deltas. The single background service worker owns browser workflow state and the one optional native-host connection. The popup is only a user interface for that controller. This milestone establishes the native connection and bounded desktop-action message channel; existing browser recording/replay remains browser-DOM based and is not silently redirected to OS input. Desktop action execution is still a separate explicitly authorized capability, not yet a replacement for browser replay.
 
 No background activity simulation, idle spoofing, hidden interaction, screenshot capture, clipboard access, keylogging, or monitoring-evasion features are included. Do not approve desktop control on sensitive screens. macOS Accessibility and Linux input-permission installers are not included in this Windows-first release.
