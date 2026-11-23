@@ -49,6 +49,8 @@ echo.
 echo Installing the required desktop input component...
 "%PYTHON_EXE%" -m pip install --user --upgrade pynput
 if errorlevel 1 goto :failed
+"%PYTHON_EXE%" -c "import tkinter,pynput; print('Python desktop dependencies: OK')"
+if errorlevel 1 goto :runtimefailed
 echo.
 echo Registering SatyTracker78 with Chrome...
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$m=@{name='com.satytracker78.desktop';description='SatyTracker78 permission-gated desktop input';path=$env:PYTHON_EXE;args=@((Join-Path $env:LOCALAPPDATA 'SatyTracker78\host.py'));type='stdio';allowed_origins=@('chrome-extension://'+$env:EXT_ID+'/')}; [IO.File]::WriteAllText((Join-Path $env:LOCALAPPDATA 'SatyTracker78\com.satytracker78.desktop.json'),($m|ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false))"
@@ -64,6 +66,12 @@ echo.
 echo  You will be asked for local permission before desktop input is enabled.
 pause
 exit /b 0
+:runtimefailed
+echo.
+echo Python was found, but tkinter or pynput cannot be imported.
+echo Repair or reinstall Python 3.10+ with Tcl/Tk support enabled, then run this installer again.
+pause
+exit /b 1
 :pipfailed
 echo.
 echo Could not install pip automatically. Check your internet connection and Python installation.
