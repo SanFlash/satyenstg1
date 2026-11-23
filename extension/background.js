@@ -1,4 +1,5 @@
 const KEY = "mouseflowExtensionState";
+const dispatchingTabs = new Set();
 const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stopOnError: true, tabId: null, lastError: "", inFlight: false };
 
 async function getState() {
@@ -23,7 +24,7 @@ async function inject(tabId) {
     return false;
   }
 }
-async function dispatch(tabId) {
+async function dispatch(tabId) {\n  if (dispatchingTabs.has(tabId)) return;\n  dispatchingTabs.add(tabId);\n  try {
   let state = await getState();
   if (state.mode !== "replaying" || state.tabId !== tabId || state.inFlight) return;
   const step = state.steps[state.stepIndex];
