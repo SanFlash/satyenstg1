@@ -3,6 +3,7 @@
 """Permission-gated SatyTracker78 Native Messaging host."""
 import json
 import os
+import msvcrt
 import struct
 import sys
 import time
@@ -133,7 +134,10 @@ def handle(message):
 
 def main():
     global armed_until
-    log("Native host started; Python=" + sys.executable)
+    # Native Messaging requires raw 32-bit length-prefixed frames on Windows.
+    msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+    log("Native host started; Python=" + sys.executable + "; argv=" + repr(sys.argv[1:]))
     try:
         while True:
             message = read()
