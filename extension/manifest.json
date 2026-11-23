@@ -17,18 +17,18 @@
     "default_title": "SatyTracker78",
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "icon128.png",
-      "32": "icon128.png",
-      "48": "icon128.png"
+      "16": "icon48.png",
+      "32": "icon48.png",
+      "48": "icon48.png"
     }
   },
   "background": {
     "service_worker": "background.js"
   },
   "icons": {
-    "16": "icon128.png",
-    "32": "icon128.png",
-    "48": "icon128.png",
-    "128": "icon128.png"
+    "16": "icon48.png",
+    "32": "icon48.png",
+    "48": "icon48.png",
+    "128": "icon48.png"
   }
 }
