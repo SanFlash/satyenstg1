@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "MouseFlow AI — Record & Repeat",
   "version": "1.2.1",
-  "description": "Record authorized browser interactions and replay flows without attaching Chrome debugger.",
+  "description": "Record authorized browser interactions and replay flows without attaching Chrome debugger Created by Satyendra Kumar Namdeo.",
   "permissions": [
     "activeTab",
     "scripting",
