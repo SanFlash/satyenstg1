@@ -64,15 +64,36 @@
   };
   const waitForTarget=async step=>{const start=Date.now();while(Date.now()-start<12000){const el=resolve(step);if(el)return el;await new Promise(r=>setTimeout(r,250));}if(Number.isFinite(step.x)&&Number.isFinite(step.y)){const x=Math.max(2,Math.min(innerWidth-2,step.x*innerWidth)),y=Math.max(2,Math.min(innerHeight-2,step.y*innerHeight));const under=document.elementFromPoint(x,y)?.closest("button,a,[role=button],input,textarea,select,[tabindex]");if(under&&visible(under)&&!privateEl(under))return under;}const h=hintsFor(step);throw new Error("Target not found. The pointer moved to the last recorded position, but no safe clickable element was there"+(h.text?": "+h.text:"")+".");};
 
+  // A lightweight page-only cursor gives visible human-style motion without a control panel or debugger attachment.
+  const cursor = document.createElement("div");
+  cursor.setAttribute("aria-hidden", "true");
+  cursor.style.cssText = "position:fixed;left:0;top:0;width:25px;height:32px;z-index:2147483647;pointer-events:none;opacity:0;transform:translate3d(-80px,-80px,0);transition:opacity .12s ease;filter:drop-shadow(0 2px 3px rgba(0,0,0,.42));";
+  cursor.innerHTML = '<svg viewBox="0 0 28 36" width="25" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M2 1.5 2.5 28l7-6.2 5.1 11.1 5-2.3-5.2-10.8 9.8-.7L2 1.5Z" fill="#fff" stroke="#151923" stroke-width="2" stroke-linejoin="round"/></svg>';
+  (document.documentElement || document).appendChild(cursor);
+  let cursorX = Math.max(24, innerWidth * .18), cursorY = Math.max(32, innerHeight * .22), cursorVisible = false;
+  const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const moveCursor = async (x, y, duration) => {
+    cursor.style.opacity = "1";
+    if (!cursorVisible) { cursorX=Math.max(12,Math.min(innerWidth-30,cursorX)); cursorY=Math.max(12,Math.min(innerHeight-38,cursorY)); cursor.style.transform=`translate3d(${cursorX}px,${cursorY}px,0)`; cursorVisible=true; await sleep(90); }
+    const sx=cursorX,sy=cursorY,dx=x-sx,dy=y-sy,distance=Math.hypot(dx,dy),ms=duration??Math.max(280,Math.min(850,280+distance*.42)),bend=Math.min(38,Math.max(8,distance*.055))*(dx*dy>=0?1:-1),cx=sx+dx*.5,cy=sy+dy*.5-bend;
+    await new Promise(resolve=>{const started=performance.now();const frame=now=>{const t=Math.min(1,(now-started)/ms),e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,inv=1-e,px=inv*inv*sx+2*inv*e*cx+e*e*x,py=inv*inv*sy+2*inv*e*cy+e*e*y;cursor.style.transform=`translate3d(${px}px,${py}px,0)`;if(t<1)requestAnimationFrame(frame);else resolve();};requestAnimationFrame(frame);});
+    cursorX=x;cursorY=y;
+  };
+  const clickFeedback = () => {
+    const ring=document.createElement("div");
+    ring.style.cssText=`position:fixed;left:0;top:0;width:18px;height:18px;border:2px solid #6558f5;border-radius:50%;pointer-events:none;z-index:2147483646;transform:translate3d(${cursorX+3}px,${cursorY+3}px,0) scale(.45);opacity:.9;transition:transform .28s ease,opacity .28s ease;`;
+    document.documentElement.appendChild(ring);requestAnimationFrame(()=>{ring.style.transform=`translate3d(${cursorX+3}px,${cursorY+3}px,0) scale(1.8)`;ring.style.opacity="0";});setTimeout(()=>ring.remove(),320);
+  };
+  const moveToElement = async el => {el.scrollIntoView({block:"center",inline:"center",behavior:"smooth"});await sleep(260);const r=el.getBoundingClientRect();await moveCursor(r.left+r.width*.5,r.top+r.height*.5);await sleep(140);};
   // Synthetic page-level events avoid Chrome's debugger notification.
   // They are not trusted hardware input and cannot move the OS cursor.
   const humanClick=async el=>{
-    el.scrollIntoView({block:"center",inline:"center",behavior:"smooth"});
-    await new Promise(r=>setTimeout(r,120));
+    await moveToElement(el);
     const b=el.getBoundingClientRect(),x=b.left+b.width*.5,y=b.top+b.height*.5;
     el.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,clientX:x,clientY:y,pointerType:"mouse"}));
     el.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,clientX:x,clientY:y}));
     el.dispatchEvent(new PointerEvent("pointermove",{bubbles:true,clientX:x,clientY:y,pointerType:"mouse"}));
+    clickFeedback();
     el.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true,clientX:x,clientY:y,button:0,pointerType:"mouse"}));
     el.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,clientX:x,clientY:y,button:0}));
     await new Promise(r=>setTimeout(r,45));
@@ -84,7 +105,7 @@
   const execute=async(step,index)=>{
     try{
       if(step.action==="scroll"){window.scrollTo({left:step.x||0,top:step.y||0,behavior:"smooth"});await new Promise(r=>setTimeout(r,350));}
-      else{const el=await waitForTarget(step);if(step.action==="click")await humanClick(el);else if(step.action==="input"){el.scrollIntoView({block:"center",behavior:"smooth"});if(el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))el.checked=Boolean(step.checked);else setValue(el,step.value??"");el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}));}}
+      else{const el=await waitForTarget(step);if(step.action==="click")await humanClick(el);else if(step.action==="input"){await moveToElement(el);el.focus({preventScroll:true});if(el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))el.checked=Boolean(step.checked);else setValue(el,step.value??"");el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}));}}
       await send("REPLAY_RESULT",{stepIndex:index,ok:true});
     }catch(error){await send("REPLAY_RESULT",{stepIndex:index,ok:false,error:error instanceof Error?error.message:String(error)});}
   };
