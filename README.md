@@ -9,6 +9,10 @@ A local-first workflow design and monitoring workspace for explicitly authorized
 - Execution is safely blocked until a real authenticated local adapter is installed; a queued dashboard record is never represented as a successful run.
 - Browser profile data remains local. Export workspace backups before clearing browser data.
 
+## Chrome extension — Record & Repeat
+
+A Manifest V3 extension is included in `extension/`. Load that folder through `chrome://extensions` → Developer mode → Load unpacked. The default flow records supported browser DOM interactions once and repeats them until the user stops the loop. It records interaction steps, not a screen-video file. See [extension/README.md](extension/README.md) for setup, supported actions and limitations.
+
 ## Commands
 ```bash
 npm install
