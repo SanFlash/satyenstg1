@@ -81,5 +81,4 @@
     }catch(error){await send("REPLAY_RESULT",{stepIndex:index,ok:false,error:error instanceof Error?error.message:String(error)});}
   };
   chrome.runtime.onMessage.addListener(m=>{if(m.type==="MF_EXECUTE_STEP")execute(m.step,m.stepIndex);});
-  refresh();
 })();
