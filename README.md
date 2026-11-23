@@ -11,7 +11,7 @@ A local-first workflow design and monitoring workspace for explicitly authorized
 
 ## Chrome extension — Record & Repeat
 
-A Manifest V3 extension is included in `extension/`. Load that folder through `chrome://extensions` → Developer mode → Load unpacked. The default flow records supported browser DOM interactions once and repeats them until the user stops the loop. It records interaction steps, not a screen-video file. See [extension/README.md](extension/README.md) for setup, supported actions and limitations.
+A Manifest V3 extension is included in `extension/`. Load that folder through `chrome://extensions` → Developer mode → Load unpacked. The default flow records supported browser DOM interactions once and repeats them until the user stops the loop. The extension also injects a floating control panel into the active webpage so recording and stopping are visible on-page. It records interaction steps, not a screen-video file. See [extension/README.md](extension/README.md) for setup, supported actions and limitations.
 
 ## Commands
 ```bash
