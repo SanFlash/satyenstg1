@@ -1,1 +1,11 @@
-node_modules/\ndist/\n.env\n.env.local\n.env.*.local\nplaywright-report/\ntest-results/\n
+node_modules
+dist
+.vite
+coverage
+playwright-report
+test-results
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
