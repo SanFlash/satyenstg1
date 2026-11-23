@@ -16,7 +16,7 @@ async function inject(tabId) {
   try {
     await chrome.scripting.executeScript({ target: { tabId }, files: ["recorder.js"] });
     return true;
-  } catch (error) {
+  } catch {
     const state = await getState();
     state.lastError = "Chrome cannot inject into this page. Open a regular http:// or https:// website, then try again.";
     if (state.mode === "recording" || state.mode === "replaying") state.mode = "error";
@@ -24,48 +24,54 @@ async function inject(tabId) {
     return false;
   }
 }
-async function dispatch(tabId) {\n  if (dispatchingTabs.has(tabId)) return;\n  dispatchingTabs.add(tabId);\n  try {
-  let state = await getState();
-  if (state.mode !== "replaying" || state.tabId !== tabId || state.inFlight) return;
-  const step = state.steps[state.stepIndex];
-  if (!step) {
-    state.mode = "error";
-    state.lastError = "No replayable actions were found. Record the task again.";
-    await setState(state);
-    return;
-  }
-  let tab;
-  try { tab = await chrome.tabs.get(tabId); }
-  catch {
-    state.mode = "idle";
-    state.lastError = "The target tab was closed.";
-    await setState(state);
-    return;
-  }
-  if (tab.status !== "complete") return;
-  if (step.url && tab.url) {
-    try {
-      if (new URL(step.url).origin !== new URL(tab.url).origin) {
-        state.mode = "error";
-        state.lastError = "Replay reached a different website origin. Cross-site navigation is not supported in one recording.";
-        await setState(state);
-        return;
-      }
-    } catch {}
-  }
-  if (!(await inject(tabId))) return;
-  state = await getState();
-  if (state.mode !== "replaying" || state.inFlight) return;
-  state.inFlight = true;
-  await setState(state);
+async function dispatch(tabId) {
+  if (dispatchingTabs.has(tabId)) return;
+  dispatchingTabs.add(tabId);
   try {
-    await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step });
-  } catch {
+    let state = await getState();
+    if (state.mode !== "replaying" || state.tabId !== tabId || state.inFlight) return;
+    const step = state.steps[state.stepIndex];
+    if (!step) {
+      state.mode = "error";
+      state.lastError = "No replayable actions were found. Record the task again.";
+      await setState(state);
+      return;
+    }
+    let tab;
+    try { tab = await chrome.tabs.get(tabId); }
+    catch {
+      state.mode = "idle";
+      state.lastError = "The target tab was closed.";
+      await setState(state);
+      return;
+    }
+    if (tab.status !== "complete") return;
+    if (step.url && tab.url) {
+      try {
+        if (new URL(step.url).origin !== new URL(tab.url).origin) {
+          state.mode = "error";
+          state.lastError = "Replay reached a different website origin. Cross-site navigation is not supported in one recording.";
+          await setState(state);
+          return;
+        }
+      } catch {}
+    }
+    if (!(await inject(tabId))) return;
     state = await getState();
-    state.mode = "error";
-    state.inFlight = false;
-    state.lastError = "The page recorder did not respond. Refresh the website and record the flow again.";
+    if (state.mode !== "replaying" || state.inFlight) return;
+    state.inFlight = true;
     await setState(state);
+    try {
+      await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step });
+    } catch {
+      state = await getState();
+      state.mode = "error";
+      state.inFlight = false;
+      state.lastError = "The page recorder did not respond. Refresh the website and record the flow again.";
+      await setState(state);
+    }
+  } finally {
+    dispatchingTabs.delete(tabId);
   }
 }
 async function replayResult(message, sender) {
