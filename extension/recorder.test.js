@@ -1,14 +1,17 @@
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const background = fs.readFileSync("extension/background.js", "utf8");
-const recorder = fs.readFileSync("extension/recorder.js", "utf8");
-const manifest = require("./manifest.json");
+import test from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const background = fs.readFileSync(new URL("./background.js", import.meta.url), "utf8");
+const recorder = fs.readFileSync(new URL("./recorder.js", import.meta.url), "utf8");
+const manifest = JSON.parse(fs.readFileSync(new URL("./manifest.json", import.meta.url), "utf8"));
+const popup = fs.readFileSync(new URL("./popup.html", import.meta.url), "utf8");
 
 test("Manifest is a Chrome Manifest V3 extension with required capabilities", () => {
   assert.equal(manifest.manifest_version, 3);
   assert.ok(manifest.permissions.includes("scripting"));
   assert.ok(manifest.permissions.includes("storage"));
+  assert.ok(manifest.permissions.includes("debugger"));
   assert.ok(manifest.background.service_worker);
 });
 
@@ -20,10 +23,17 @@ test("Background and page recorder use the same replay command", () => {
 test("Replay acknowledgements include the exact step index", () => {
   assert.match(recorder, /REPLAY_RESULT/);
   assert.match(recorder, /stepIndex:index/);
-  assert.match(background, /message\.stepIndex !== state\.stepIndex/);
+  assert.match(background, /message\\.stepIndex !== state\\.stepIndex/);
 });
 
-test("On-page controls and record/repeat/stop actions are present", () => {
-  for (const id of ["record", "finish", "repeat", "stop"]) assert.ok(recorder.includes('id="' + id + '"'));
-  for (const command of ["RECORD_START", "RECORD_STOP", "LOOP_START", "LOOP_STOP"]) assert.ok(recorder.includes('"' + command + '"'));
+test("Tracker UI stays in the extension popup, not on the webpage", () => {
+  assert.doesNotMatch(recorder, /mouseflow-ai-overlay|attachShadow|<section class=/);
+  assert.doesNotMatch(popup, /showOverlay|on-page controls/i);
+  for (const id of ["record", "stopRecord", "play", "stop"]) assert.match(popup, new RegExp('id="' + id + '"'));
+});
+
+test("Clicks use browser-level mouse dispatch without an injected cursor", () => {
+  assert.match(recorder, /MF_MOUSE_CLICK/);
+  assert.match(background, /Input\\.dispatchMouseEvent/);
+  assert.doesNotMatch(recorder, /movePointer|cursor\\.style/);
 });
