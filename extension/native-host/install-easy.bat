@@ -27,8 +27,27 @@ if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 copy /y "%~dp0host.py" "%INSTALL_DIR%\host.py" >nul
 if errorlevel 1 goto :failed
 echo.
+echo Checking Python package installer...
+"%PYTHON_EXE%" -m pip --version >nul 2>&1
+if not errorlevel 1 goto :install_dependency
+
+echo pip is missing. Trying Python's built-in ensurepip...
+"%PYTHON_EXE%" -m ensurepip --upgrade
+"%PYTHON_EXE%" -m pip --version >nul 2>&1
+if not errorlevel 1 goto :install_dependency
+
+echo ensurepip is unavailable. Downloading the official pip bootstrap...
+set "GETPIP=%TEMP%\satytracker78-get-pip.py"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Invoke-WebRequest -UseBasicParsing 'https://bootstrap.pypa.io/get-pip.py' -OutFile $env:GETPIP; exit 0 } catch { Write-Host $_; exit 1 }"
+if errorlevel 1 goto :pipfailed
+"%PYTHON_EXE%" "%GETPIP%" --user
+if errorlevel 1 goto :pipfailed
+del "%GETPIP%" >nul 2>&1
+
+:install_dependency
+echo.
 echo Installing the required desktop input component...
-"%PYTHON_EXE%" -m pip install --user pynput
+"%PYTHON_EXE%" -m pip install --user --upgrade pynput
 if errorlevel 1 goto :failed
 echo.
 echo Registering SatyTracker78 with Chrome...
@@ -45,6 +64,12 @@ echo.
 echo  You will be asked for local permission before desktop input is enabled.
 pause
 exit /b 0
+:pipfailed
+echo.
+echo Could not install pip automatically. Check your internet connection and Python installation.
+echo You can install Python from https://www.python.org/downloads/windows/ and select Add Python to PATH.
+pause
+exit /b 1
 :badid
 echo.
 echo Invalid extension ID. Copy the 32-character ID shown under SatyTracker78 at chrome://extensions.
