@@ -7,7 +7,7 @@ Copy-Item (Join-Path $Root "host.py") (Join-Path $Dir "host.py") -Force
 & $Python -m pip install --user pynput
 if($LASTEXITCODE -ne 0){throw "pynput install failed"}
 $Exe=(Get-Command $Python).Source
-$Json=@{name="com.satytracker78.desktop";description="SatyTracker78 permission-gated desktop input";path=$Exe;type="stdio";allowed_origins=@("chrome-extension://$ExtensionId/")}|ConvertTo-Json -Depth 4
+$Json=@{name="com.satytracker78.desktop";description="SatyTracker78 permission-gated desktop input";path=$Exe;args=@((Join-Path $Dir "host.py"));type="stdio";allowed_origins=@("chrome-extension://$ExtensionId/")}|ConvertTo-Json -Depth 4
 $Path=Join-Path $Dir "com.satytracker78.desktop.json";Set-Content $Path $Json -Encoding UTF8
 $Key="HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.satytracker78.desktop";New-Item $Key -Force|Out-Null;Set-ItemProperty $Key "(default)" $Path
 Write-Host "Installed. Restart Chrome and reload SatyTracker78."
