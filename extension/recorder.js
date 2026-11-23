@@ -26,7 +26,7 @@
   document.addEventListener("click",e=>{const t=e.target instanceof Element?e.target:e.target?.parentElement;const el=t?.closest('button,a,[role="button"],input[type="button"],input[type="submit"],summary,[data-testid]');if(el)record("click",el);},true);
   document.addEventListener("change",e=>{const el=e.target;if(el instanceof HTMLSelectElement||el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))record("input",el);},true);
   document.addEventListener("input",e=>{const el=e.target;if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement)||privateEl(el))return;if(el instanceof HTMLInputElement&&!["text","search","email","url","tel","number"].includes(el.type))return;clearTimeout(el.__mfTimer);el.__mfTimer=setTimeout(()=>record("input",el),450);},true);
-  document.addEventListener("scroll",e=>{if(fromOverlay(e)||e.target!==document)return;send("RECORD_STEP",{step:{action:"scroll",x:scrollX,y:scrollY,url:location.href,at:Date.now()}});},true);
+  document.addEventListener("scroll",e=>{if(e.target!==document)return;send("RECORD_STEP",{step:{action:"scroll",x:scrollX,y:scrollY,url:location.href,at:Date.now()}});},true);
 
   const hintsFor=step=>{
     const id=String(step.selector||"").replace(/^#/,"").toLowerCase();
@@ -62,15 +62,23 @@
     if(Number.isFinite(step.x)&&Number.isFinite(step.y)){const el=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,step.x*innerWidth)),Math.max(0,Math.min(innerHeight-1,step.y*innerHeight)))?.closest('button,a,[role="button"],input,textarea,select,[tabindex]');if(el&&visible(el)&&!privateEl(el))return el;}
     return null;
   };
-  const waitForTarget=async step=>{const start=Date.now();while(Date.now()-start<12000){const el=resolve(step);if(el)return el;await new Promise(r=>setTimeout(r,250));}if(Number.isFinite(step.x)&&Number.isFinite(step.y)){const x=Math.max(2,Math.min(innerWidth-2,step.x*innerWidth)),y=Math.max(2,Math.min(innerHeight-2,step.y*innerHeight));await movePointer(x,y,750);const under=document.elementFromPoint(x,y)?.closest("button,a,[role=button],input,textarea,select,[tabindex]");if(under&&visible(under)&&!privateEl(under))return under;}const h=hintsFor(step);throw new Error("Target not found. The pointer moved to the last recorded position, but no safe clickable element was there"+(h.text?": "+h.text:"")+".");};
+  const waitForTarget=async step=>{const start=Date.now();while(Date.now()-start<12000){const el=resolve(step);if(el)return el;await new Promise(r=>setTimeout(r,250));}if(Number.isFinite(step.x)&&Number.isFinite(step.y)){const x=Math.max(2,Math.min(innerWidth-2,step.x*innerWidth)),y=Math.max(2,Math.min(innerHeight-2,step.y*innerHeight));const under=document.elementFromPoint(x,y)?.closest("button,a,[role=button],input,textarea,select,[tabindex]");if(under&&visible(under)&&!privateEl(under))return under;}const h=hintsFor(step);throw new Error("Target not found. The pointer moved to the last recorded position, but no safe clickable element was there"+(h.text?": "+h.text:"")+".");};
 
-  // Use Chrome DevTools Protocol input so the page receives browser-level, trusted mouse events.
+  // Synthetic page-level events avoid Chrome's debugger notification.
+  // They are not trusted hardware input and cannot move the OS cursor.
   const humanClick=async el=>{
     el.scrollIntoView({block:"center",inline:"center",behavior:"smooth"});
-    await new Promise(r=>setTimeout(r,250));
+    await new Promise(r=>setTimeout(r,120));
     const b=el.getBoundingClientRect(),x=b.left+b.width*.5,y=b.top+b.height*.5;
-    const result=await send("MF_MOUSE_CLICK",{x,y});
-    if(!result?.ok) throw new Error(result?.error||"Browser mouse input could not be dispatched.");
+    el.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,clientX:x,clientY:y,pointerType:"mouse"}));
+    el.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,clientX:x,clientY:y}));
+    el.dispatchEvent(new PointerEvent("pointermove",{bubbles:true,clientX:x,clientY:y,pointerType:"mouse"}));
+    el.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true,clientX:x,clientY:y,button:0,pointerType:"mouse"}));
+    el.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,clientX:x,clientY:y,button:0}));
+    await new Promise(r=>setTimeout(r,45));
+    el.dispatchEvent(new PointerEvent("pointerup",{bubbles:true,clientX:x,clientY:y,button:0,pointerType:"mouse"}));
+    el.dispatchEvent(new MouseEvent("mouseup",{bubbles:true,clientX:x,clientY:y,button:0}));
+    el.click();
   };
   const setValue=(el,value)=>{const p=el instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:el instanceof HTMLSelectElement?HTMLSelectElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(p,"value")?.set;if(setter)setter.call(el,value);else el.value=value;};
   const execute=async(step,index)=>{
