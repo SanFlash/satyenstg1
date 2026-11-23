@@ -23,7 +23,7 @@ test("Background and page recorder use the same replay command", () => {
 test("Replay acknowledgements include the exact step index", () => {
   assert.match(recorder, /REPLAY_RESULT/);
   assert.match(recorder, /stepIndex:index/);
-  assert.match(background, /message\\.stepIndex !== state\\.stepIndex/);
+  assert.ok(background.includes("message.stepIndex !== state.stepIndex"));
 });
 
 test("Tracker UI stays in the extension popup, not on the webpage", () => {
@@ -34,6 +34,6 @@ test("Tracker UI stays in the extension popup, not on the webpage", () => {
 
 test("Clicks use browser-level mouse dispatch without an injected cursor", () => {
   assert.match(recorder, /MF_MOUSE_CLICK/);
-  assert.match(background, /Input\\.dispatchMouseEvent/);
-  assert.doesNotMatch(recorder, /movePointer|cursor\\.style/);
+  assert.ok(background.includes("Input.dispatchMouseEvent"));
+  assert.ok(!recorder.includes("movePointer") && !recorder.includes("cursor.style"));
 });
