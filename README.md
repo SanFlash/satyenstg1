@@ -31,3 +31,6 @@ A Vercel static site cannot control a user's OS pointer, keyboard or local brows
 
 ## Creator
 Created by **Satyendra Kumar Namdeo**.
+
+
+Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved.
