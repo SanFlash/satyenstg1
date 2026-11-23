@@ -1,6 +1,59 @@
 /* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI. */
 const KEY = "mouseflowExtensionState";
 const dispatchingTabs = new Set();
+// One native connection is owned by the MV3 service worker, never by the short-lived popup.
+const NATIVE_HOST = "com.satytracker78.desktop";
+let nativePort = null;
+let nativeState = { connected: false, armed: false, status: "Not connected", error: "" };
+let nativePending = null;
+function publishNativeState() {
+  chrome.runtime.sendMessage({ type: "DESKTOP_STATUS", state: nativeState }).catch(() => {});
+}
+function closeNativePort(revoke = true) {
+  const port = nativePort;
+  nativePort = null;
+  if (revoke && port) { try { port.postMessage({ command: "stop" }); } catch {} }
+  if (port) { try { port.disconnect(); } catch {} }
+  nativeState = { connected: false, armed: false, status: "Not connected", error: "" };
+  publishNativeState();
+}
+function connectNativeHelper() {
+  if (nativePort) return Promise.resolve(nativeState);
+  nativeState = { connected: false, armed: false, status: "Connecting to Windows helper…", error: "" };
+  publishNativeState();
+  return new Promise((resolve, reject) => {
+    let port;
+    try { port = chrome.runtime.connectNative(NATIVE_HOST); }
+    catch (error) { nativeState.error = error.message || String(error); nativeState.status = "Not connected"; publishNativeState(); reject(error); return; }
+    nativePort = port;
+    nativePending = { resolve, reject };
+    port.onMessage.addListener(message => {
+      if (message?.connected) {
+        nativeState = { connected: true, armed: false, status: "Connected — requesting local permission…", error: "" };
+        publishNativeState();
+        try { port.postMessage({ command: "arm" }); }
+        catch (error) { nativePending?.reject(error); nativePending = null; }
+        return;
+      }
+      if (message?.armed) {
+        nativeState = { connected: true, armed: true, status: "Connected · permission active for up to 5 minutes", error: "" };
+        nativePending?.resolve(nativeState); nativePending = null; publishNativeState(); return;
+      }
+      if (message?.ok === false) {
+        nativeState = { connected: true, armed: false, status: "Connected · permission not granted", error: message.error || "Desktop permission was not granted." };
+        nativePending?.resolve(nativeState); nativePending = null; publishNativeState(); return;
+      }
+    });
+    port.onDisconnect.addListener(() => {
+      const reason = chrome.runtime.lastError?.message || "Chrome could not communicate with the native helper.";
+      nativePort = null;
+      nativeState = { connected: false, armed: false, status: "Not connected", error: reason };
+      nativePending?.reject(new Error(reason)); nativePending = null; publishNativeState();
+    });
+    try { port.postMessage({ command: "status" }); }
+    catch (error) { closeNativePort(false); reject(error); }
+  });
+}
 const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stepDelayMs: 450, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "" };
 
 async function getState() {
@@ -104,6 +157,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
       case "GET_STATE":
         sendResponse(state);
+        return;
+      case "DESKTOP_GET_STATUS":
+        sendResponse(nativeState);
+        return;
+      case "DESKTOP_ENABLE":
+        try { sendResponse({ ok: true, state: await connectNativeHelper() }); }
+        catch (error) { sendResponse({ ok: false, error: error.message || String(error), state: nativeState }); }
+        return;
+      case "DESKTOP_STOP":
+        closeNativePort(true);
+        sendResponse({ ok: true, state: nativeState });
+        return;
+      case "DESKTOP_ACTION":
+        if (!nativePort || !nativeState.armed) { sendResponse({ ok: false, error: "Desktop helper is not connected and authorized." }); return; }
+        try { nativePort.postMessage({ command: "action", action: message.action || {} }); sendResponse({ ok: true }); }
+        catch (error) { sendResponse({ ok: false, error: error.message || String(error) }); }
         return;
       case "SHOW_OVERLAY": {
         const tabId = message.tabId ?? senderTabId;
