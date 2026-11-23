@@ -1,25 +1,18 @@
 # MouseFlow AI Chrome extension
 
 ## Install / update
-1. Open `chrome://extensions` in Chrome.
-2. Enable Developer mode.
-3. Choose **Load unpacked** and select this repository's `extension` folder.
-4. After pulling an update, click the extension card's **Reload** icon. Refresh the target website too.
-5. Pin MouseFlow AI to the toolbar.
+1. Open chrome://extensions and enable Developer mode.
+2. Choose Load unpacked and select this repository's extension folder.
+3. After pulling an update, click Reload on the extension card and refresh the target website.
 
-## Use the visible page controls
-1. Open a normal website tab (http/https).
-2. Click the extension icon and choose **Show controls on active page**. A floating MouseFlow panel appears in the top-right corner of the webpage.
-3. Use **Record** on the floating panel and perform the task once.
-4. Click **Finish**. Then click **Repeat**. It repeats until you press **Stop** on the page or in the extension popup.
+## Use
+1. Open a normal http/https website and choose Show controls on active page.
+2. Click Record, perform the task once, then Finish.
+3. Click Repeat. It loops until Stop is pressed.
 
-The recorder stores supported DOM actions locally: clicks, text input, dropdown/checkbox/radio changes and page scrolling. It records action steps, not a screen-video file. Password, file-upload, payment-card and one-time-code fields are excluded. The floating panel is injected into the active page and is excluded from recording.
+## Resilient replay and pointer
+New recordings save visible text, accessible role, labels, attributes, nearby text context and normalized position in addition to a best-effort selector. Replay tries the selector, then semantic/context matching, then a position fallback. Old recordings without these hints use best-effort ID-to-text inference; re-record for strongest matching.
 
-## Troubleshooting
-- If the panel does not appear, make sure the current tab is a normal website, not `chrome://`, the Chrome Web Store, a PDF viewer or another protected page. Click the extension's Reload icon, refresh the website, then click **Show controls on active page**.
-- If a replay stops, read the error shown in the floating panel. A selector may have changed or the page may have blocked automation.
-- Keep the target tab open. Do not navigate away manually while a loop is running.
-- The first replay should be watched. Test with a harmless action before enabling a long loop.
+Replay animates a visible pointer inside the webpage and simulates hover/click events. Chrome security prevents a content script from moving the actual operating-system cursor. Simulated events are not trusted hardware input, so sites requiring trusted physical input may reject them.
 
-## Safety and limitations
-Use only on websites/accounts you are authorized to operate. Do not use loops for purchases, bulk messaging, deleting data, bypassing CAPTCHAs, access controls, rate limits or other site protections. Dynamic apps, cross-origin frames and canvas interfaces may need dedicated adapters.
+The extension records DOM actions, not a screen video. Password, file-upload, payment-card and one-time-code fields are excluded. Use only on sites you are authorized to operate. Do not automate purchases, bulk messaging, destructive actions, CAPTCHA or access-control bypasses. Protected pages, canvas interfaces and cross-origin frames need specialized support.
