@@ -1,19 +1,23 @@
 # SatyTracker78
 
-A local-first workflow recording and replay product for explicitly authorized browser automation, with an optional permission-gated Windows desktop helper.
+A local-first workflow recording and replay product for explicitly authorized browser automation, with a standalone permission-gated Windows desktop agent.
 
-## Reliability and deployment
+## Windows desktop agent
+The supported desktop helper is a self-contained .NET 8 Windows x64 executable. It does not require Python, pip, or pynput. The Windows CI job builds and smoke-tests the Native Messaging protocol, then publishes the `satytracker78-windows-agent` artifact. Download it from the latest successful GitHub Actions run, extract it, and run `install-agent.bat`. See [desktop-agent/README.md](desktop-agent/README.md).
+
+The previous Python native host remains in the repository for historical compatibility, but its installer is deprecated. Use the standalone .NET agent for new installations.
+
+## Tracker integrations
+The planned provider layer is for transparent, user-authorized API access and reporting—not monitoring evasion or activity simulation. See [docs/tracker-integrations.md](docs/tracker-integrations.md) for provider API availability, account prerequisites, and current implementation status. A provider is not described as connected until its official authentication flow and a real API request have been tested.
+
+## Browser extension — Record & Repeat
+A Manifest V3 extension is included in `extension/`. Load that folder through `chrome://extensions` → Developer mode → Load unpacked. The extension records supported browser DOM interactions and repeats them until the user stops the loop. It records interaction steps, not a screen-video file. See [extension/README.md](extension/README.md).
+
+## Dashboard and development
 - Vite + React + TypeScript dashboard, deployable as a static SPA on Vercel.
-- Defensive workflow import validation: JSON syntax, field types, allowed actions, locator strategies, unique step IDs, bounds and size limits.
-- Local storage access guarded against unavailable storage, malformed JSON and quota/security exceptions.
-- Execution in the dashboard remains safely blocked until a real authenticated local adapter is installed; a queued dashboard record is never represented as a successful run.
-- Browser profile data remains local. Export workspace backups before clearing browser data.
+- Defensive workflow import validation and local storage handling.
+- Dashboard execution remains safely blocked until a real authenticated execution adapter is connected; queued records are never represented as successful runs.
 
-## Single-worker execution architecture\n\nThe Manifest V3 `background.js` service worker is the single orchestration point for browser workflow state and the optional native desktop-helper connection. The popup is a control surface only; it does not own a separate native connection. Browser tabs/content scripts act as page adapters, while the Windows Native Messaging host is an optional OS-input adapter. This avoids creating a separate orchestration worker for each website or tab.\n\nThe native helper connection is permission-gated and is not silently substituted for DOM replay. Full dashboard-to-local-agent pairing and automatic conversion of browser recordings into OS-level input are not yet implemented.\n\n## Chrome extension — Record & Repeat
-
-A Manifest V3 extension is included in `extension/`. Load that folder through `chrome://extensions` → Developer mode → Load unpacked. The default flow records supported browser DOM interactions once and repeats them until the user stops the loop. The extension also injects a floating control panel into the active webpage so recording and stopping are visible on-page. It records interaction steps, not a screen-video file. See [extension/README.md](extension/README.md) for setup, supported actions and limitations.
-
-## Commands
 ```bash
 npm install
 npm run dev
@@ -22,15 +26,10 @@ npm test
 npm run test:e2e
 ```
 
-## Vercel
-Framework Vite; install `npm install`; build `npm run build`; output `dist`. No environment variables are required. SPA rewrite is configured in vercel.json.
-
-## Execution boundary
-A Vercel static site cannot control a user's OS pointer, keyboard or local browser session. Production execution requires a separately installed extension/desktop agent, secure pairing, origin allowlists, validated messages, cancellation semantics and an independent emergency stop. Connection controls are currently explicit demo placeholders, not live pairings.
-
+## Safety
+All desktop actions require explicit local permission and expire after five minutes. Stop or closing Chrome revokes the session. No screenshot capture, clipboard access, keylogging, hidden activity simulation, idle spoofing, or monitoring-evasion features are included. API connectors use only provider-authorized scopes and account permissions.
 
 ## Creator
 Created by **Satyendra Kumar Namdeo**.
-
 
 Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved.
