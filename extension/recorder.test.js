@@ -20,6 +20,14 @@ test("Background and page recorder use the same replay command", () => {
   assert.match(recorder, /MF_EXECUTE_STEP/);
 });
 
+test("Replay waits for smooth scrolling to settle before continuing", () => {
+  assert.ok(recorder.includes("waitForScrollSettled"));
+  assert.ok(recorder.includes("await waitForScrollSettled(el)"));
+  assert.ok(recorder.includes('behavior:"smooth"'));
+  assert.ok(recorder.includes("stableFrames >= 5"));
+  assert.ok(recorder.includes("await waitForScrollSettled();"));
+});
+
 test("Replay acknowledgements include the exact step index", () => {
   assert.match(recorder, /REPLAY_RESULT/);
   assert.match(recorder, /stepIndex:index/);
