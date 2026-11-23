@@ -1,1 +1,2 @@
+/* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI. */
 export function createId():string{try{if(typeof crypto!=="undefined"&&typeof crypto.randomUUID==="function")return crypto.randomUUID()}catch{}return `mf-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,12)}`}
