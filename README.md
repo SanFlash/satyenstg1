@@ -1,41 +1,25 @@
 # MouseFlow AI
 
-A local-first workspace for defining, validating and monitoring authorized browser and desktop automation.
+A local-first workflow design and monitoring workspace for explicitly authorized browser/desktop automation.
 
-## Included
-- Vercel-hostable React + TypeScript dashboard (Vite)
-- Workflow editor with browser/desktop target selection
-- User-supplied locator library: CSS, XPath, ID, text, role and test ID
-- Workflow JSON import/export and local run history
-- Responsive overview, workflow editor, locator manager, logs, connections and settings
+## Reliability and deployment
+- Vite + React + TypeScript dashboard, deployable as a static SPA on Vercel.
+- Defensive workflow import validation: JSON syntax, field types, allowed actions, locator strategies, unique step IDs, bounds and size limits.
+- Local storage access guarded against unavailable storage, malformed JSON and quota/security exceptions.
+- Execution is safely blocked until a real authenticated local adapter is installed; a queued dashboard record is never represented as a successful run.
+- Browser profile data remains local. Export workspace backups before clearing browser data.
 
-## Deployment boundary
-Vercel hosts the static dashboard only. It does not run a user's physical mouse, desktop applications, Chrome extension scripts or persistent local agent. Real execution requires separately installed local components. Connection indicators are demonstration placeholders; toggling them does not create a real connection. A queued record is not evidence of execution.
-
-## Requirements
-Node.js 20+ and npm.
-
-## Local development
+## Commands
 ```bash
 npm install
 npm run dev
-```
-
-## Production build
-```bash
 npm run build
-npm run preview
+npm test
+npm run test:e2e
 ```
 
 ## Vercel
-Import SanFlash/satyenstg1. Select Vite, build command npm run build, output directory dist, install command npm install. No environment variables are required. vercel.json configures the SPA fallback.
+Framework Vite; install `npm install`; build `npm run build`; output `dist`. No environment variables are required. SPA rewrite is configured in vercel.json.
 
-## Persistence
-Workflow definitions and history are stored in the current browser profile localStorage. They are not synced between devices. Export backups when needed.
-
-## Planned local components
-- Chrome Manifest V3 extension for active-tab locator inspection and browser execution.
-- Native messaging host with strict origin and message validation.
-- Separately installed desktop agent for OS-level operations.
-
-See docs/ARCHITECTURE.md, docs/SECURITY.md and docs/DEPLOYMENT.md.
+## Execution boundary
+A Vercel static site cannot control a user's OS pointer, keyboard or local browser session. Production execution requires a separately installed extension/desktop agent, secure pairing, origin allowlists, validated messages, cancellation semantics and an independent emergency stop. Connection controls are currently explicit demo placeholders, not live pairings.
