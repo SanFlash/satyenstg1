@@ -4,13 +4,13 @@ Windows x64 Native Messaging host built from transparent .NET 8 source. The publ
 
 ## Requirements
 - Windows 10/11 x64
-- .NET 8 SDK (not just runtime). Download from https://dotnet.microsoft.com/download/dotnet/8.0
+- Internet access to download the official .NET 8 SDK installer. The build script installs the SDK into `%LOCALAPPDATA%\\SatyTracker78\\dotnet-sdk` for the current user; a system-wide installation is not required.
 - Google Chrome with the SatyTracker78 extension loaded
 
 ## Install
 1. Download the `satytracker78-windows-agent-source` artifact from the latest successful GitHub Actions run and extract it.
 2. Inspect `Program.cs` and `SatyTracker78.Agent.csproj` if desired.
-3. Double-click `build-and-install.bat`. It compiles the source on your PC, then starts `install-agent.bat`.
+3. Double-click `build-and-install.bat`. It bootstraps the official .NET 8 SDK into your user profile if needed, compiles the source locally, then starts `install-agent.bat`.
 4. Paste the current extension ID from `chrome://extensions`.
 5. Fully exit Chrome, reopen it, reload SatyTracker78, and choose Connect & enable desktop helper.
 6. Approve the local permission prompt only when you intend to use desktop input.
