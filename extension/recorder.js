@@ -26,7 +26,15 @@
   document.addEventListener("click",e=>{const t=e.target instanceof Element?e.target:e.target?.parentElement;const el=t?.closest('button,a,[role="button"],input[type="button"],input[type="submit"],summary,[data-testid]');if(el)record("click",el);},true);
   document.addEventListener("change",e=>{const el=e.target;if(el instanceof HTMLSelectElement||el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))record("input",el);},true);
   document.addEventListener("input",e=>{const el=e.target;if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement)||privateEl(el))return;if(el instanceof HTMLInputElement&&!["text","search","email","url","tel","number"].includes(el.type))return;clearTimeout(el.__mfTimer);el.__mfTimer=setTimeout(()=>record("input",el),450);},true);
-  document.addEventListener("scroll",e=>{if(e.target!==document)return;send("RECORD_STEP",{step:{action:"scroll",x:scrollX,y:scrollY,url:location.href,at:Date.now()}});},true);
+  // Capture one settled scroll position instead of flooding the flow with every scroll frame.
+  let scrollCaptureTimer = 0;
+  document.addEventListener("scroll",e=>{
+    if(e.target!==document)return;
+    clearTimeout(scrollCaptureTimer);
+    scrollCaptureTimer=setTimeout(()=>{
+      send("RECORD_STEP",{step:{action:"scroll",x:scrollX,y:scrollY,url:location.href,at:Date.now()}});
+    },180);
+  },true);
 
   const hintsFor=step=>{
     const id=String(step.selector||"").replace(/^#/,"").toLowerCase();
