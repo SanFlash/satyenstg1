@@ -13,7 +13,7 @@
 5. Click **Start repeating flow**. Replay continues until you reopen the popup and click **Stop replay**.
 
 ## Background operation and input model
-All controls live in the extension popup. During replay, a small arrow cursor is animated inside the webpage with eased, curved movement, a short target pause and click ripple feedback. No floating control panel, Chrome debugger attachment or debugger permission is used, so Chrome's "started debugging this browser" banner is not triggered.
+All controls live in the extension popup. During replay, a small arrow cursor is animated inside the webpage with curved Bézier trajectories, distance-based acceleration, smooth frame-by-frame motion, hover transitions, a short target pause, press feedback and a click ripple. No floating control panel, Chrome debugger attachment or debugger permission is used, so Chrome's "started debugging this browser" banner is not triggered.
 
 New recordings save visible text, accessible role, labels, attributes, nearby text context and normalized position in addition to a best-effort selector. Replay tries the selector, then semantic/context matching, then a position fallback.
 
