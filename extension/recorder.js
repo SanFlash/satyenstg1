@@ -74,7 +74,7 @@
     if(Number.isFinite(step.x)&&Number.isFinite(step.y)){const el=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,step.x*innerWidth)),Math.max(0,Math.min(innerHeight-1,step.y*innerHeight)))?.closest('button,a,[role="button"],input,textarea,select,[tabindex]');if(el&&visible(el)&&!privateEl(el))return el;}
     return null;
   };
-  const waitForTarget=async step=>{const start=Date.now();while(Date.now()-start<12000){const el=resolve(step);if(el)return el;await new Promise(r=>setTimeout(r,250));}const h=hintsFor(step);throw new Error("Could not identify target using text, label, role, context or position"+(h.text?": "+h.text:"")+". Confirm the correct page is open.");};
+  const waitForTarget=async step=>{const start=Date.now();while(Date.now()-start<12000){const el=resolve(step);if(el)return el;await new Promise(r=>setTimeout(r,250));}if(Number.isFinite(step.x)&&Number.isFinite(step.y)){const x=Math.max(2,Math.min(innerWidth-2,step.x*innerWidth)),y=Math.max(2,Math.min(innerHeight-2,step.y*innerHeight));await movePointer(x,y,750);const under=document.elementFromPoint(x,y)?.closest("button,a,[role=button],input,textarea,select,[tabindex]");if(under&&visible(under)&&!privateEl(under))return under;}const h=hintsFor(step);throw new Error("Target not found. The pointer moved to the last recorded position, but no safe clickable element was there"+(h.text?": "+h.text:"")+".");};
 
   // Animated in-page pointer; browser security does not permit moving the OS cursor from a content script.
   let cursor;
