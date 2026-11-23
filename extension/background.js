@@ -1,6 +1,6 @@
 const KEY = "mouseflowExtensionState";
 const dispatchingTabs = new Set();
-const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stopOnError: true, tabId: null, lastError: "", inFlight: false };
+const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "" };
 
 async function getState() {
   const data = await chrome.storage.local.get(KEY);
@@ -60,6 +60,7 @@ async function dispatch(tabId) {
     state = await getState();
     if (state.mode !== "replaying" || state.inFlight) return;
     state.inFlight = true;
+    state.inFlightUrl = tab.url || "";
     await setState(state);
     try {
       await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step });
@@ -78,6 +79,7 @@ async function replayResult(message, sender) {
   let state = await getState();
   if (state.mode !== "replaying" || state.tabId !== sender.tab?.id || !state.inFlight || message.stepIndex !== state.stepIndex) return;
   state.inFlight = false;
+  state.inFlightUrl = "";
   if (!message.ok && state.stopOnError) {
     state.mode = "error";
     state.lastError = message.error || "A replay action failed.";
@@ -169,19 +171,35 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;
-  const state = await getState();
+  let state = await getState();
   if (state.tabId !== tabId) return;
   if (state.mode === "recording" || state.mode === "replaying" || state.mode === "idle") await inject(tabId);
-  const fresh = await getState();
-  if (fresh.mode === "replaying" && !fresh.inFlight) dispatch(tabId);
+  state = await getState();
+  // A full-page navigation unloads the content script before it can acknowledge a click.
+  // Treat the navigation as completion of that click, then resume on the newly loaded page.
+  if (state.mode === "replaying" && state.inFlight && state.inFlightUrl && tab?.url && tab.url !== state.inFlightUrl) {
+    state.inFlight = false;
+    state.inFlightUrl = "";
+    state.stepIndex += 1;
+    if (state.stepIndex >= state.steps.length) {
+      state.stepIndex = 0;
+      state.iterations += 1;
+    }
+    await setState(state);
+    const wait = state.stepIndex === 0 ? state.delayMs : 650;
+    setTimeout(() => dispatch(tabId), wait);
+    return;
+  }
+  if (state.mode === "replaying" && !state.inFlight) dispatch(tabId);
 });
 chrome.tabs.onRemoved.addListener(async tabId => {
   const state = await getState();
   if (state.tabId === tabId) {
     state.mode = "idle";
     state.inFlight = false;
+    state.inFlightUrl = "";
     state.lastError = "Target tab was closed.";
     await setState(state);
   }
