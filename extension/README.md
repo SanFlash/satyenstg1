@@ -1,13 +1,15 @@
-# MouseFlow AI Chrome extension
+# SatyTracker78 Chrome extension
+
+Created by **Satyendra Kumar Namdeo**.
 
 ## Install / update
 1. Open `chrome://extensions` and enable Developer mode.
 2. Choose **Load unpacked** and select this repository's `extension` folder.
-3. Click **Reload** on MouseFlow AI and refresh the target website.
+3. Click **Reload** on SatyTracker78 and refresh the target website.
 
 ## Use
 1. Open a normal `http://` or `https://` website.
-2. Open the MouseFlow AI toolbar popup and click **Start recording**.
+2. Open the SatyTracker78 toolbar popup and click **Start recording**.
 3. Perform the task, reopen the popup and click **Finish recording**.
 4. Choose **Flow speed** to set the delay between actions and **Delay between loops** to set the pause between complete cycles.
 5. Click **Start repeating flow**. Replay continues until you reopen the popup and click **Stop replay**.
