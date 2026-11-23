@@ -46,3 +46,7 @@ $("play").addEventListener("click", async () => {
 $("stop").addEventListener("click", async () => { await send({ type: "LOOP_STOP" }); await refresh(); show("Replay stopped."); });
 chrome.storage.onChanged.addListener(refresh);
 refresh();
+let desktopPort=null;
+function desktopStatus(text,armed=false){const el=document.getElementById("desktopStatus");if(el)el.textContent=text;const stop=document.getElementById("desktopStop");if(stop)stop.disabled=!armed;}
+document.getElementById("desktopEnable")?.addEventListener("click",()=>{try{desktopPort=chrome.runtime.connectNative("com.satytracker78.desktop");desktopPort.onMessage.addListener(m=>{desktopStatus(m.error|| (m.armed?"Permission granted · up to 5 minutes":"Not armed"),!!m.armed);show(m.error||"Desktop helper response received.");});desktopPort.onDisconnect.addListener(()=>{desktopStatus("Not connected");show(chrome.runtime.lastError?.message||"Native host disconnected");desktopPort=null;});desktopPort.postMessage({command:"arm"});desktopStatus("Waiting for local permission…");}catch(e){desktopStatus("Not connected");show("Install the native helper first. "+(e.message||e));}});
+document.getElementById("desktopStop")?.addEventListener("click",()=>{desktopPort?.postMessage({command:"stop"});desktopStatus("Stopped");});
