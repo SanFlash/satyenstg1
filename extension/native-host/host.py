@@ -3,7 +3,10 @@
 """Permission-gated SatyTracker78 Native Messaging host."""
 import json
 import os
-import msvcrt
+try:
+    import msvcrt
+except ImportError:  # Native host is Windows-first; tests may run on other platforms.
+    msvcrt = None
 import struct
 import sys
 import time
@@ -135,8 +138,9 @@ def handle(message):
 def main():
     global armed_until
     # Native Messaging requires raw 32-bit length-prefixed frames on Windows.
-    msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
-    msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
+    if msvcrt is not None:
+        msvcrt.setmode(sys.stdin.fileno(), os.O_BINARY)
+        msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
     log("Native host started; Python=" + sys.executable + "; argv=" + repr(sys.argv[1:]))
     try:
         while True:
