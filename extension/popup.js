@@ -47,67 +47,30 @@ $("stop").addEventListener("click", async () => { await send({ type: "LOOP_STOP"
 chrome.storage.onChanged.addListener(refresh);
 refresh();
 
-let desktopPort = null;
-let desktopConnected = false;
-function desktopStatus(message, armed = false) {
-  $("desktopStatus").textContent = message;
-  $("desktopStop").disabled = !armed;
-  $("desktopEnable").disabled = message.includes("Connecting") || message.includes("permission window");
+function renderDesktop(state) {
+  $("desktopStatus").textContent = state?.status || "Not connected";
+  $("desktopStop").disabled = !state?.armed;
+  $("desktopEnable").disabled = Boolean(state?.status?.includes("Connecting") || state?.status?.includes("requesting"));
+  if (state?.error) show(state.error + " If setup was never run, double-click extension/native-host/install-easy.bat. For diagnostics, run diagnose.bat in that folder.");
 }
-function desktopFailure(message) {
-  desktopConnected = false;
-  desktopPort = null;
-  desktopStatus("Not connected");
-  show(message + " If setup was never run, open the downloaded project folder and double-click extension/native-host/install-easy.bat. For diagnostics, run diagnose.bat in that folder.");
-}
-$("desktopEnable").addEventListener("click", () => {
-  if (desktopPort) {
-    try { desktopPort.disconnect(); } catch {}
-    desktopPort = null;
-  }
-  desktopStatus("Connecting to Windows helper…");
+$("desktopEnable").addEventListener("click", async () => {
+  $("desktopEnable").disabled = true;
+  $("desktopStatus").textContent = "Connecting to Windows helper…";
   try {
-    const port = chrome.runtime.connectNative("com.satytracker78.desktop");
-    desktopPort = port;
-    let stage = "checking";
-    port.onMessage.addListener(message => {
-      if (stage === "checking") {
-        if (!message?.connected) {
-          desktopFailure(message?.error || "The native helper responded incorrectly.");
-          return;
-        }
-        stage = "arming";
-        desktopStatus("Connected — waiting for permission window…");
-        port.postMessage({ command: "arm" });
-        return;
-      }
-      if (message?.armed) {
-        desktopConnected = true;
-        desktopStatus("Connected · permission active for up to 5 minutes", true);
-        show("Desktop helper connected and locally authorized.");
-      } else if (message?.ok === false) {
-        desktopStatus("Connected · permission not granted");
-        show(message.error || "Desktop permission was not granted.");
-        $("desktopEnable").disabled = false;
-      } else {
-        desktopStatus("Connected · not armed");
-        $("desktopEnable").disabled = false;
-      }
-    });
-    port.onDisconnect.addListener(() => {
-      const reason = chrome.runtime.lastError?.message || "Chrome could not communicate with the native helper.";
-      desktopFailure(reason);
-    });
-    port.postMessage({ command: "status" });
+    const result = await send({ type: "DESKTOP_ENABLE" });
+    renderDesktop(result.state || { status: "Not connected", error: result.error });
+    if (!result.ok) show(result.error || "Could not connect to the desktop helper.");
+    else if (result.state?.armed) show("Desktop helper connected and locally authorized.");
   } catch (error) {
-    desktopFailure("Could not start the native helper: " + (error.message || String(error)));
+    renderDesktop({ status: "Not connected", error: error.message || String(error) });
   }
 });
-$("desktopStop").addEventListener("click", () => {
-  if (!desktopPort) return;
-  try { desktopPort.postMessage({ command: "stop" }); } catch {}
-  desktopConnected = false;
-  desktopStatus("Connected · desktop control stopped");
+$("desktopStop").addEventListener("click", async () => {
+  const result = await send({ type: "DESKTOP_STOP" });
+  renderDesktop(result.state);
   show("Desktop permission revoked. Browser recording and replay are unaffected.");
-  $("desktopEnable").disabled = false;
 });
+chrome.runtime.onMessage.addListener(message => {
+  if (message?.type === "DESKTOP_STATUS") renderDesktop(message.state);
+});
+send({ type: "DESKTOP_GET_STATUS" }).then(renderDesktop).catch(() => renderDesktop({ status: "Not connected" }));
