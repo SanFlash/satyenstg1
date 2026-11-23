@@ -153,6 +153,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ ok: true });
         return;
       }
+      case "MF_MOUSE_CLICK": {
+        if (senderTabId == null) { sendResponse({ ok: false, error: "Mouse input requires a browser tab." }); return; }
+        const x = Number(message.x), y = Number(message.y);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) { sendResponse({ ok: false, error: "Invalid mouse coordinates." }); return; }
+        const target = { tabId: senderTabId };
+        let attached = false;
+        try {
+          await chrome.debugger.attach(target, "1.3");
+          attached = true;
+          await chrome.debugger.sendCommand(target, "Input.dispatchMouseEvent", { type: "mouseMoved", x, y, button: "none" });
+          await chrome.debugger.sendCommand(target, "Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "left", clickCount: 1 });
+          await chrome.debugger.sendCommand(target, "Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 });
+          sendResponse({ ok: true });
+        } catch (error) {
+          sendResponse({ ok: false, error: "Browser-level mouse input failed: " + (error?.message || String(error)) });
+        } finally {
+          if (attached) { try { await chrome.debugger.detach(target); } catch {} }
+        }
+        return;
+      }
       case "REPLAY_RESULT":
         await replayResult(message, sender);
         sendResponse({ ok: true });
