@@ -1,1 +1,55 @@
-const $=id=>document.getElementById(id);let state=null;async function activeTab(){const [tab]=await chrome.tabs.query({active:true,currentWindow:true});if(!tab?.id)throw new Error("No active browser tab.");return tab;}async function send(message){return chrome.runtime.sendMessage(message);}function show(message){$("message").textContent=message;}function render(s){state=s;$("status").textContent=s.mode==="recording"?"Recording":s.mode==="replaying"?"Repeating":s.mode==="error"?"Error":"Ready";$("stepCount").textContent=s.steps.length;$("runCount").textContent=s.iterations;$("record").disabled=s.mode==="recording"||s.mode==="replaying";$("stopRecord").disabled=s.mode!=="recording";$("play").disabled=!s.steps.length||s.mode==="recording"||s.mode==="replaying";$("stop").disabled=s.mode!=="replaying";if(s.mode==="error")show(s.lastError||"Replay stopped because an action failed.");}async function refresh(){render(await send({type:"GET_STATE"}));}$("showOverlay").onclick=async()=>{try{const tab=await activeTab();const r=await send({type:"SHOW_OVERLAY",tabId:tab.id});if(!r.ok)throw new Error(r.error);show("MouseFlow controls are now visible on the active page.");}catch(e){show(e.message);}};$("record").onclick=async()=>{try{const tab=await activeTab();const r=await send({type:"RECORD_START",tabId:tab.id});if(!r.ok)throw new Error(r.error);show("Recording started. Use the on-page controls to finish or replay.");await refresh();}catch(e){show(e.message);}};$("stopRecord").onclick=async()=>{const r=await send({type:"RECORD_STOP"});render({...state,mode:"idle",steps:r.steps||[]});show((r.steps||[]).length+" actions saved.");};$("play").onclick=async()=>{try{const tab=await activeTab();const r=await send({type:"LOOP_START",tabId:tab.id,delayMs:Number($("delay").value),stopOnError:$("stopOnError").checked});if(!r.ok)throw new Error(r.error);show("Replay started. Use the on-page Stop control to end the loop.");await refresh();}catch(e){show(e.message);}};$("stop").onclick=async()=>{await send({type:"LOOP_STOP"});await refresh();show("Replay stopped by user.");};chrome.storage.onChanged.addListener(refresh);refresh();
+const $ = id => document.getElementById(id);
+let currentState;
+async function activeTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) throw new Error("No active browser tab.");
+  return tab;
+}
+const send = message => chrome.runtime.sendMessage(message);
+function show(message) { $("message").textContent = message; }
+function render(state) {
+  currentState = state;
+  $("status").textContent = state.mode === "recording" ? "Recording" : state.mode === "replaying" ? "Repeating" : state.mode === "error" ? "Error" : "Ready";
+  $("stepCount").textContent = state.steps.length;
+  $("runCount").textContent = state.iterations;
+  $("record").disabled = state.mode === "recording" || state.mode === "replaying";
+  $("stopRecord").disabled = state.mode !== "recording";
+  $("play").disabled = !state.steps.length || state.mode === "recording" || state.mode === "replaying";
+  $("stop").disabled = state.mode !== "replaying";
+  if (state.lastError) show(state.lastError);
+}
+async function refresh() { render(await send({ type: "GET_STATE" })); }
+$("showOverlay").addEventListener("click", async () => {
+  try {
+    const tab = await activeTab();
+    const result = await send({ type: "SHOW_OVERLAY", tabId: tab.id });
+    if (!result.ok) throw new Error(result.error || "Could not show controls.");
+    show("Controls added to the active webpage. You can use them without reopening this popup.");
+  } catch (error) { show(error.message || String(error)); }
+});
+$("record").addEventListener("click", async () => {
+  try {
+    const tab = await activeTab();
+    const result = await send({ type: "RECORD_START", tabId: tab.id });
+    if (!result.ok) throw new Error(result.error || "Could not start recording.");
+    show("Recording started. Perform the task, then choose Finish on the page.");
+    await refresh();
+  } catch (error) { show(error.message || String(error)); }
+});
+$("stopRecord").addEventListener("click", async () => {
+  const result = await send({ type: "RECORD_STOP" });
+  render({ ...currentState, mode: "idle", steps: result.steps || [] });
+  show((result.steps || []).length + " actions saved.");
+});
+$("play").addEventListener("click", async () => {
+  try {
+    const tab = await activeTab();
+    const result = await send({ type: "LOOP_START", tabId: tab.id, delayMs: Number($("delay").value), stopOnError: $("stopOnError").checked });
+    if (!result.ok) throw new Error(result.error || "Could not start replay.");
+    show("Repeat loop started. Use Stop on the page or in this popup to end it.");
+    await refresh();
+  } catch (error) { show(error.message || String(error)); }
+});
+$("stop").addEventListener("click", async () => { await send({ type: "LOOP_STOP" }); await refresh(); show("Replay stopped."); });
+chrome.storage.onChanged.addListener(refresh);
+refresh();

@@ -1,46 +1,181 @@
 const KEY = "mouseflowExtensionState";
-const initial = { mode:"idle", steps:[], stepIndex:0, iterations:0, delayMs:1000, stopOnError:true, tabId:null, lastError:"", inFlight:false, inFlightStepIndex:null, inFlightUrl:"" };
-async function state(){ const d=await chrome.storage.local.get(KEY); return {...initial,...(d[KEY]||{})}; }
-async function save(s){ await chrome.storage.local.set({[KEY]:s}); }
-async function inject(tabId){ try { await chrome.scripting.executeScript({target:{tabId},files:["recorder.js"]}); return true; } catch(e){ const s=await state(); await save({...s,mode:"error",lastError:"Chrome blocked this page. Open a normal http/https website and reload it."}); return false; } }
-async function dispatch(tabId){
- let s=await state(); if(s.mode!=="replaying"||s.tabId!==tabId||s.inFlight)return;
- const step=s.steps[s.stepIndex]; if(!step){await save({...s,mode:"error",lastError:"The flow has no replayable step."});return;}
- let tab;try{tab=await chrome.tabs.get(tabId);}catch{await save({...s,mode:"idle",lastError:"The target tab was closed."});return;}
- if(tab.status!=="complete")return;
- if(step.url&&tab.url){try{if(new URL(step.url).origin!==new URL(tab.url).origin){await save({...s,lastError:"Waiting for the recorded website to open: "+new URL(step.url).origin});return;}}catch{}}
- if(!await inject(tabId))return;
- s=await state();if(s.mode!=="replaying"||s.inFlight)return;
- s.inFlight=true;s.inFlightStepIndex=s.stepIndex;s.inFlightUrl=tab.url||"";await save(s);
- try{await chrome.tabs.sendMessage(tabId,{type:"MF_EXECUTE_STEP",stepIndex:s.stepIndex});}
- catch(e){s=await state();await save({...s,mode:"error",inFlight:false,lastError:"The page did not respond. Reload the page and record the flow again."});}
+const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stopOnError: true, tabId: null, lastError: "", inFlight: false };
+
+async function getState() {
+  const data = await chrome.storage.local.get(KEY);
+  return { ...initial, ...(data[KEY] || {}) };
 }
-async function advance(result){
- let s=await state();if(s.mode!=="replaying"||!s.inFlight||result.stepIndex!==s.inFlightStepIndex)return;
- s.inFlight=false;s.inFlightStepIndex=null;s.inFlightUrl="";
- if(!result.ok&&s.stopOnError){s.mode="error";s.lastError=result.error||"A replay action failed.";await save(s);return;}
- s.stepIndex++;if(s.stepIndex>=s.steps.length){s.stepIndex=0;s.iterations++;}
- await save(s);setTimeout(()=>dispatch(s.tabId),s.stepIndex===0?s.delayMs:350);
+async function setState(value) {
+  await chrome.storage.local.set({ [KEY]: value });
+  if (value.tabId != null) {
+    try { await chrome.tabs.sendMessage(value.tabId, { type: "MF_STATE", state: value }); } catch {}
+  }
 }
-chrome.runtime.onMessage.addListener((m,sender,reply)=>{
- (async()=>{
-  let s=await state();const senderTab=sender.tab?.id;
-  if(m.type==="GET_STATE"){reply(s);return;}
-  if(m.type==="SHOW_OVERLAY"){const id=m.tabId??senderTab;if(id==null){reply({ok:false,error:"Open a normal website tab first."});return;}const ok=await inject(id);if(ok){s=await state();if(s.mode==="idle"){s.tabId=id;await save(s);}}reply({ok});return;}
-  if(m.type==="RECORD_START"){const id=m.tabId??senderTab;if(id==null){reply({ok:false,error:"Open a normal website tab first."});return;}s={...initial,mode:"recording",tabId:id};await save(s);const ok=await inject(id);reply({ok});return;}
-  if(m.type==="RECORD_STEP"&&s.mode==="recording"&&s.tabId===senderTab){if(s.steps.length<1500){s.steps.push(m.step);await save(s);}reply({ok:true,count:s.steps.length});return;}
-  if(m.type==="RECORD_STOP"){s.mode="idle";await save(s);reply({ok:true,steps:s.steps});return;}
-  if(m.type==="LOOP_START"){const id=m.tabId??senderTab;if(!s.steps.length){reply({ok:false,error:"Record at least one action first."});return;}s={...s,mode:"replaying",stepIndex:0,iterations:0,delayMs:Math.max(0,Math.min(30000,Number(m.delayMs)||0)),stopOnError:m.stopOnError!==false,tabId:id,inFlight:false,inFlightStepIndex:null,lastError:""};await save(s);await dispatch(id);reply({ok:true});return;}
-  if(m.type==="REPLAY_RESULT"){await advance(m);reply({ok:true});return;}
-  if(m.type==="LOOP_STOP"){s.mode="idle";s.inFlight=false;s.inFlightStepIndex=null;await save(s);reply({ok:true});return;}
-  reply({ok:false,error:"Unsupported command"});
- })().catch(e=>reply({ok:false,error:String(e)}));return true;
+async function inject(tabId) {
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["recorder.js"] });
+    return true;
+  } catch (error) {
+    const state = await getState();
+    state.lastError = "Chrome cannot inject into this page. Open a regular http:// or https:// website, then try again.";
+    if (state.mode === "recording" || state.mode === "replaying") state.mode = "error";
+    await setState(state);
+    return false;
+  }
+}
+async function dispatch(tabId) {
+  let state = await getState();
+  if (state.mode !== "replaying" || state.tabId !== tabId || state.inFlight) return;
+  const step = state.steps[state.stepIndex];
+  if (!step) {
+    state.mode = "error";
+    state.lastError = "No replayable actions were found. Record the task again.";
+    await setState(state);
+    return;
+  }
+  let tab;
+  try { tab = await chrome.tabs.get(tabId); }
+  catch {
+    state.mode = "idle";
+    state.lastError = "The target tab was closed.";
+    await setState(state);
+    return;
+  }
+  if (tab.status !== "complete") return;
+  if (step.url && tab.url) {
+    try {
+      if (new URL(step.url).origin !== new URL(tab.url).origin) {
+        state.mode = "error";
+        state.lastError = "Replay reached a different website origin. Cross-site navigation is not supported in one recording.";
+        await setState(state);
+        return;
+      }
+    } catch {}
+  }
+  if (!(await inject(tabId))) return;
+  state = await getState();
+  if (state.mode !== "replaying" || state.inFlight) return;
+  state.inFlight = true;
+  await setState(state);
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step });
+  } catch {
+    state = await getState();
+    state.mode = "error";
+    state.inFlight = false;
+    state.lastError = "The page recorder did not respond. Refresh the website and record the flow again.";
+    await setState(state);
+  }
+}
+async function replayResult(message, sender) {
+  let state = await getState();
+  if (state.mode !== "replaying" || state.tabId !== sender.tab?.id || !state.inFlight || message.stepIndex !== state.stepIndex) return;
+  state.inFlight = false;
+  if (!message.ok && state.stopOnError) {
+    state.mode = "error";
+    state.lastError = message.error || "A replay action failed.";
+    await setState(state);
+    return;
+  }
+  state.stepIndex += 1;
+  if (state.stepIndex >= state.steps.length) {
+    state.stepIndex = 0;
+    state.iterations += 1;
+  }
+  await setState(state);
+  const wait = state.stepIndex === 0 ? state.delayMs : 450;
+  setTimeout(() => dispatch(state.tabId), wait);
+}
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  (async () => {
+    const senderTabId = sender.tab?.id ?? null;
+    let state = await getState();
+    switch (message.type) {
+      case "GET_STATE":
+        sendResponse(state);
+        return;
+      case "SHOW_OVERLAY": {
+        const tabId = message.tabId ?? senderTabId;
+        if (tabId == null) { sendResponse({ ok: false, error: "Open a normal website tab first." }); return; }
+        const ok = await inject(tabId);
+        if (ok) {
+          state = await getState();
+          if (state.mode === "idle" || state.tabId == null) {
+            state.tabId = tabId;
+            state.lastError = "";
+            await setState(state);
+          }
+        }
+        sendResponse({ ok });
+        return;
+      }
+      case "RECORD_START": {
+        const tabId = message.tabId ?? senderTabId;
+        if (tabId == null) { sendResponse({ ok: false, error: "Open a normal website tab first." }); return; }
+        state = { ...initial, mode: "recording", tabId, steps: [] };
+        await setState(state);
+        const ok = await inject(tabId);
+        sendResponse({ ok, error: ok ? "" : (await getState()).lastError });
+        return;
+      }
+      case "RECORD_STEP":
+        if (state.mode === "recording" && state.tabId === senderTabId && message.step && state.steps.length < 2000) {
+          state.steps.push(message.step);
+          await setState(state);
+        }
+        sendResponse({ ok: true, count: state.steps.length });
+        return;
+      case "RECORD_STOP":
+        if (state.mode === "recording" && (senderTabId == null || state.tabId === senderTabId)) {
+          state.mode = "idle";
+          state.lastError = "";
+          await setState(state);
+        }
+        sendResponse({ ok: true, steps: state.steps });
+        return;
+      case "LOOP_START": {
+        const tabId = message.tabId ?? senderTabId ?? state.tabId;
+        if (!state.steps.length) { sendResponse({ ok: false, error: "Record at least one action before starting the repeat loop." }); return; }
+        if (tabId == null) { sendResponse({ ok: false, error: "Open the page containing the recorded task." }); return; }
+        state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
+        await setState(state);
+        await dispatch(tabId);
+        sendResponse({ ok: true });
+        return;
+      }
+      case "REPLAY_RESULT":
+        await replayResult(message, sender);
+        sendResponse({ ok: true });
+        return;
+      case "LOOP_STOP":
+        state.mode = "idle";
+        state.inFlight = false;
+        state.lastError = "";
+        await setState(state);
+        sendResponse({ ok: true });
+        return;
+      default:
+        sendResponse({ ok: false, error: "Unknown MouseFlow command." });
+    }
+  })().catch(error => sendResponse({ ok: false, error: String(error) }));
+  return true;
 });
-chrome.tabs.onUpdated.addListener(async(id,change,tab)=>{
- if(change.status!=="complete")return;let s=await state();if(s.tabId!==id)return;
- await inject(id);s=await state();
- if(s.mode==="replaying"&&s.inFlight&&tab.url&&s.inFlightUrl&&tab.url!==s.inFlightUrl){
-  s.inFlight=false;s.inFlightStepIndex=null;s.inFlightUrl="";s.stepIndex++;if(s.stepIndex>=s.steps.length){s.stepIndex=0;s.iterations++;}await save(s);setTimeout(()=>dispatch(id),s.stepIndex===0?s.delayMs:350);
- }else if(s.mode==="replaying"&&!s.inFlight){await dispatch(id);}
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+  if (changeInfo.status !== "complete") return;
+  const state = await getState();
+  if (state.tabId !== tabId) return;
+  if (state.mode === "recording" || state.mode === "replaying" || state.mode === "idle") await inject(tabId);
+  const fresh = await getState();
+  if (fresh.mode === "replaying" && !fresh.inFlight) dispatch(tabId);
 });
-chrome.tabs.onRemoved.addListener(async id=>{const s=await state();if(s.tabId===id)await save({...s,mode:"idle",inFlight:false,lastError:"Target tab was closed."});});
+chrome.tabs.onRemoved.addListener(async tabId => {
+  const state = await getState();
+  if (state.tabId === tabId) {
+    state.mode = "idle";
+    state.inFlight = false;
+    state.lastError = "Target tab was closed.";
+    await setState(state);
+  }
+});
