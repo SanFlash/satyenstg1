@@ -30,6 +30,12 @@ test("Replay waits for smooth scrolling to settle before continuing", () => {
   assert.ok(recorder.includes("await waitForScrollSettled();"));
 });
 
+test("Scroll recording debounces movement into stable flow checkpoints", () => {
+  assert.ok(recorder.includes("scrollCaptureTimer"));
+  assert.ok(recorder.includes("clearTimeout(scrollCaptureTimer)"));
+  assert.ok(recorder.includes("},180)"));
+});
+
 test("Replay acknowledgements include the exact step index", () => {
   assert.match(recorder, /REPLAY_RESULT/);
   assert.match(recorder, /stepIndex:index/);
