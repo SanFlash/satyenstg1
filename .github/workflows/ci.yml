@@ -1,4 +1,4 @@
-# Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI.
+# Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: SatyTracker78.
 name: CI
 on:
   push:
@@ -17,9 +17,9 @@ jobs:
       - run: npm test
       - name: Test extension message contract
         run: node --test extension/*.test.js
-      - name: Test native desktop helper safety contract
+      - name: Test legacy native helper safety contract
         run: python -m unittest discover -s extension/native-host -p test_host.py
-      - name: Test native messaging host stdio protocol
+      - name: Test legacy native messaging host stdio protocol
         run: python extension/native-host/verify-host.py extension/native-host/host.py
       - name: Validate extension JavaScript
         run: |
@@ -30,3 +30,29 @@ jobs:
         run: node -e "const m=require('./extension/manifest.json'); if(m.manifest_version!==3 || !m.background?.service_worker || !m.action?.default_popup) process.exit(1)"
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+
+  windows-desktop-agent:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Publish self-contained Windows agent
+        run: dotnet publish desktop-agent/SatyTracker78.Agent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o desktop-agent/publish
+      - name: Include installer and documentation
+        shell: pwsh
+        run: |
+          Copy-Item desktop-agent/install-agent.bat desktop-agent/publish/
+          Copy-Item desktop-agent/uninstall-agent.bat desktop-agent/publish/
+          Copy-Item desktop-agent/README.md desktop-agent/publish/
+      - name: Smoke-test Native Messaging protocol
+        run: python desktop-agent/test_protocol.py desktop-agent/publish/SatyTracker78.Agent.exe
+      - name: Upload standalone Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: satytracker78-windows-agent
+          path: desktop-agent/publish/
+          if-no-files-found: error
+          retention-days: 30
