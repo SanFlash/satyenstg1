@@ -37,6 +37,10 @@ test("Clicks use browser-level mouse dispatch without an injected cursor", () =>
   assert.doesNotMatch(background, /chrome\.debugger|Input\.dispatchMouseEvent/);
   assert.ok(recorder.includes("const moveCursor"));
   assert.ok(recorder.includes("const moveToElement"));
+  assert.ok(recorder.includes("const updateHover"));
+  assert.ok(recorder.includes("pointerover"));
+  assert.ok(recorder.includes("const c1x"));
+  assert.ok(recorder.includes("requestAnimationFrame"));
   assert.ok(recorder.includes("clickFeedback"));
   assert.match((fs.readFileSync(new URL("./popup.html", import.meta.url), "utf8")), /id="stepDelay"/);
   assert.ok(background.includes("stepDelayMs"));
