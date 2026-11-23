@@ -26,7 +26,19 @@ function connectNativeHelper() {
     try { port = chrome.runtime.connectNative(NATIVE_HOST); }
     catch (error) { nativeState.error = error.message || String(error); nativeState.status = "Not connected"; publishNativeState(); reject(error); return; }
     nativePort = port;
-    nativePending = { resolve, reject };
+    let settled = false;
+    const handshakeTimer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      const reason = "Native helper started but did not answer the status handshake within 10 seconds. Run the repair installer and inspect native-host.log.";
+      nativeState = { connected: false, armed: false, status: "Connection timed out", error: reason };
+      nativePending = null;
+      try { port.disconnect(); } catch {}
+      if (nativePort === port) nativePort = null;
+      publishNativeState();
+      reject(new Error(reason));
+    }, 10000);
+    nativePending = { resolve: value => { if (settled) return; settled = true; clearTimeout(handshakeTimer); resolve(value); }, reject: error => { if (settled) return; settled = true; clearTimeout(handshakeTimer); reject(error); } };
     port.onMessage.addListener(message => {
       if (message?.connected) {
         nativeState = { connected: true, armed: false, status: "Connected — requesting local permission…", error: "" };
