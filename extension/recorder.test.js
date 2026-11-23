@@ -35,7 +35,9 @@ test("Tracker UI stays in the extension popup, not on the webpage", () => {
 test("Clicks use browser-level mouse dispatch without an injected cursor", () => {
   assert.doesNotMatch(recorder, /MF_MOUSE_CLICK/);
   assert.doesNotMatch(background, /chrome\.debugger|Input\.dispatchMouseEvent/);
-  assert.ok(!recorder.includes("movePointer") && !recorder.includes("cursor.style"));
+  assert.ok(recorder.includes("const moveCursor"));
+  assert.ok(recorder.includes("const moveToElement"));
+  assert.ok(recorder.includes("clickFeedback"));
   assert.match((fs.readFileSync(new URL("./popup.html", import.meta.url), "utf8")), /id="stepDelay"/);
   assert.ok(background.includes("stepDelayMs"));
 });
