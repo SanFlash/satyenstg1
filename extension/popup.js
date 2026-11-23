@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI. */
 const $ = id => document.getElementById(id);
 let currentState;
 async function activeTab() {
