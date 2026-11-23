@@ -41,18 +41,22 @@ jobs:
           dotnet-version: 8.0.x
       - name: Publish self-contained Windows agent
         run: dotnet publish desktop-agent/SatyTracker78.Agent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o desktop-agent/publish
-      - name: Include installer and documentation
+      - name: Smoke-test compiled Native Messaging agent
+        run: python desktop-agent/test_protocol.py desktop-agent/publish/SatyTracker78.Agent.exe
+      - name: Assemble source-based installer package (no executable)
         shell: pwsh
         run: |
-          Copy-Item desktop-agent/install-agent.bat desktop-agent/publish/
-          Copy-Item desktop-agent/uninstall-agent.bat desktop-agent/publish/
-          Copy-Item desktop-agent/README.md desktop-agent/publish/
-      - name: Smoke-test Native Messaging protocol
-        run: python desktop-agent/test_protocol.py desktop-agent/publish/SatyTracker78.Agent.exe
-      - name: Upload standalone Windows package
+          New-Item -ItemType Directory -Force desktop-agent/distribution | Out-Null
+          Copy-Item desktop-agent/SatyTracker78.Agent.csproj desktop-agent/distribution/
+          Copy-Item desktop-agent/Program.cs desktop-agent/distribution/
+          Copy-Item desktop-agent/build-and-install.bat desktop-agent/distribution/
+          Copy-Item desktop-agent/install-agent.bat desktop-agent/distribution/
+          Copy-Item desktop-agent/uninstall-agent.bat desktop-agent/distribution/
+          Copy-Item desktop-agent/README.md desktop-agent/distribution/
+      - name: Upload source-based Windows package
         uses: actions/upload-artifact@v4
         with:
-          name: satytracker78-windows-agent
-          path: desktop-agent/publish/
+          name: satytracker78-windows-agent-source
+          path: desktop-agent/distribution/
           if-no-files-found: error
           retention-days: 30
