@@ -51,7 +51,7 @@ function renderDesktop(state) {
   $("desktopStatus").textContent = state?.status || "Not connected";
   $("desktopStop").disabled = !state?.armed;
   $("desktopEnable").disabled = Boolean(state?.status?.includes("Connecting") || state?.status?.includes("requesting"));
-  if (state?.error) show(state.error + " If setup was never run, double-click extension/native-host/install-easy.bat. For diagnostics, run diagnose.bat in that folder.");
+  if (state?.error) show(state.error + " If setup is missing, download the satytracker78-windows-agent artifact from GitHub Actions and run install-agent.bat. See desktop-agent/README.md.");
 }
 $("desktopEnable").addEventListener("click", async () => {
   $("desktopEnable").disabled = true;
