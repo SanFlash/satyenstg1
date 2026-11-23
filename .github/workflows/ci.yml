@@ -50,6 +50,7 @@ jobs:
           Copy-Item desktop-agent/SatyTracker78.Agent.csproj desktop-agent/distribution/
           Copy-Item desktop-agent/Program.cs desktop-agent/distribution/
           Copy-Item desktop-agent/build-and-install.bat desktop-agent/distribution/
+          Copy-Item desktop-agent/setup-dotnet-sdk.ps1 desktop-agent/distribution/
           Copy-Item desktop-agent/install-agent.bat desktop-agent/distribution/
           Copy-Item desktop-agent/uninstall-agent.bat desktop-agent/distribution/
           Copy-Item desktop-agent/README.md desktop-agent/distribution/
