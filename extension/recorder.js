@@ -70,14 +70,30 @@
   cursor.style.cssText = "position:fixed;left:0;top:0;width:25px;height:32px;z-index:2147483647;pointer-events:none;opacity:0;transform:translate3d(-80px,-80px,0);transition:opacity .12s ease;filter:drop-shadow(0 2px 3px rgba(0,0,0,.42));";
   cursor.innerHTML = '<svg viewBox="0 0 28 36" width="25" height="32" xmlns="http://www.w3.org/2000/svg"><path d="M2 1.5 2.5 28l7-6.2 5.1 11.1 5-2.3-5.2-10.8 9.8-.7L2 1.5Z" fill="#fff" stroke="#151923" stroke-width="2" stroke-linejoin="round"/></svg>';
   (document.documentElement || document).appendChild(cursor);
-  let cursorX = Math.max(24, innerWidth * .18), cursorY = Math.max(32, innerHeight * .22), cursorVisible = false;
+  let cursorX = Math.max(24, innerWidth * .18), cursorY = Math.max(32, innerHeight * .22), cursorVisible = false, lastHover = null, moveSequence = 0;
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-  const moveCursor = async (x, y, duration) => {
-    cursor.style.opacity = "1";
-    if (!cursorVisible) { cursorX=Math.max(12,Math.min(innerWidth-30,cursorX)); cursorY=Math.max(12,Math.min(innerHeight-38,cursorY)); cursor.style.transform=`translate3d(${cursorX}px,${cursorY}px,0)`; cursorVisible=true; await sleep(90); }
-    const sx=cursorX,sy=cursorY,dx=x-sx,dy=y-sy,distance=Math.hypot(dx,dy),ms=duration??Math.max(280,Math.min(850,280+distance*.42)),bend=Math.min(38,Math.max(8,distance*.055))*(dx*dy>=0?1:-1),cx=sx+dx*.5,cy=sy+dy*.5-bend;
-    await new Promise(resolve=>{const started=performance.now();const frame=now=>{const t=Math.min(1,(now-started)/ms),e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,inv=1-e,px=inv*inv*sx+2*inv*e*cx+e*e*x,py=inv*inv*sy+2*inv*e*cy+e*e*y;cursor.style.transform=`translate3d(${px}px,${py}px,0)`;if(t<1)requestAnimationFrame(frame);else resolve();};requestAnimationFrame(frame);});
-    cursorX=x;cursorY=y;
+  const hitTarget = (x,y) => {const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,x)),Math.max(0,Math.min(innerHeight-1,y)));return hit instanceof Element && !cursor.contains(hit) ? hit : null;};
+  const dispatchMouse = (el,type,x,y) => {if(!el?.isConnected)return;const common={bubbles:true,cancelable:true,composed:true,clientX:x,clientY:y,screenX:x+window.screenX,screenY:y+window.screenY,view:window};if(type.startsWith("pointer"))el.dispatchEvent(new PointerEvent(type,{...common,pointerId:1,pointerType:"mouse",isPrimary:true,button:-1,buttons:0}));else el.dispatchEvent(new MouseEvent(type,{...common,button:0,buttons:0}));};
+  const updateHover = (x,y) => {const next=hitTarget(x,y);if(next!==lastHover){if(lastHover){dispatchMouse(lastHover,"pointerout",x,y);dispatchMouse(lastHover,"mouseout",x,y);}if(next){dispatchMouse(next,"pointerover",x,y);dispatchMouse(next,"mouseover",x,y);}lastHover=next;}if(next){dispatchMouse(next,"pointermove",x,y);dispatchMouse(next,"mousemove",x,y);}};
+  const moveCursor = async (x,y,duration) => {
+    const seq=++moveSequence;
+    x=Math.max(2,Math.min(innerWidth-28,x));y=Math.max(2,Math.min(innerHeight-36,y));
+    cursor.style.opacity="1";
+    if(!cursorVisible){cursor.style.transform=`translate3d(${cursorX}px,${cursorY}px,0)`;cursorVisible=true;await sleep(100);}
+    const sx=cursorX,sy=cursorY,dx=x-sx,dy=y-sy,distance=Math.hypot(dx,dy);
+    const ms=duration??Math.max(360,Math.min(1050,300+distance*.58));
+    const nx=distance?(-dy/distance):0,ny=distance?(dx/distance):0;
+    const curve=(Math.min(44,Math.max(7,distance*.075)))*(Math.random()>.5?1:-1);
+    const c1x=sx+dx*.28+nx*curve,c1y=sy+dy*.28+ny*curve;
+    const c2x=sx+dx*.72+nx*curve*.42,c2y=sy+dy*.72+ny*curve*.42;
+    await new Promise(resolve=>{const started=performance.now();let frameNo=0;const frame=now=>{if(seq!==moveSequence){resolve();return;}const t=Math.min(1,(now-started)/ms),e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,u=1-e;
+      let px=u*u*u*sx+3*u*u*e*c1x+3*u*e*e*c2x+e*e*e*x;
+      let py=u*u*u*sy+3*u*u*e*c1y+3*u*e*e*c2y+e*e*e*y;
+      cursor.style.transform=`translate3d(${px}px,${py}px,0)`;
+      if(++frameNo%2===0||t===1)updateHover(px+2,py+2);
+      if(t<1)requestAnimationFrame(frame);else resolve();};requestAnimationFrame(frame);});
+    if(seq!==moveSequence)return;
+    cursorX=x;cursorY=y;updateHover(x+2,y+2);
   };
   const clickFeedback = () => {
     const ring=document.createElement("div");
@@ -90,13 +106,13 @@
   const humanClick=async el=>{
     await moveToElement(el);
     const b=el.getBoundingClientRect(),x=b.left+b.width*.5,y=b.top+b.height*.5;
-    el.dispatchEvent(new PointerEvent("pointerover",{bubbles:true,clientX:x,clientY:y,pointerType:"mouse"}));
-    el.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,clientX:x,clientY:y}));
-    el.dispatchEvent(new PointerEvent("pointermove",{bubbles:true,clientX:x,clientY:y,pointerType:"mouse"}));
+    updateHover(x,y);
     clickFeedback();
     el.dispatchEvent(new PointerEvent("pointerdown",{bubbles:true,clientX:x,clientY:y,button:0,pointerType:"mouse"}));
     el.dispatchEvent(new MouseEvent("mousedown",{bubbles:true,clientX:x,clientY:y,button:0}));
-    await new Promise(r=>setTimeout(r,45));
+    cursor.querySelector("svg").style.transform="scale(.91)";
+    await sleep(95+Math.random()*45);
+    cursor.querySelector("svg").style.transform="scale(1)";
     el.dispatchEvent(new PointerEvent("pointerup",{bubbles:true,clientX:x,clientY:y,button:0,pointerType:"mouse"}));
     el.dispatchEvent(new MouseEvent("mouseup",{bubbles:true,clientX:x,clientY:y,button:0}));
     el.click();
