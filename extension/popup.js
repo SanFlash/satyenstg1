@@ -36,9 +36,9 @@ $("stopRecord").addEventListener("click", async () => {
 $("play").addEventListener("click", async () => {
   try {
     const tab = await activeTab();
-    const result = await send({ type: "LOOP_START", tabId: tab.id, delayMs: Number($("delay").value), stopOnError: $("stopOnError").checked });
+    const result = await send({ type: "LOOP_START", tabId: tab.id, delayMs: Number($("delay").value), stepDelayMs: Number($("stepDelay").value), stopOnError: $("stopOnError").checked });
     if (!result.ok) throw new Error(result.error || "Could not start replay.");
-    show("Repeat loop started. Reopen this popup and use Stop replay to end it.");
+    show("Repeat loop started at " + $("stepDelay").selectedOptions[0].textContent + " action pacing. Reopen this popup to stop it.");
     await refresh();
   } catch (error) { show(error.message || String(error)); }
 });
