@@ -20,10 +20,13 @@ internal static class Program
             {
                 var request = ReadFrame();
                 if (request is null) break;
-                object response;
-                try { response = Handle(request.Value); }
-                catch (Exception ex) { Log("Request failed: " + ex); response = new { ok = false, error = "Request failed. See native-host.log." }; }
-                WriteFrame(response);
+                using (request)
+                {
+                    object response;
+                    try { response = Handle(request); }
+                    catch (Exception ex) { Log("Request failed: " + ex); response = new { ok = false, error = "Request failed. See native-host.log." }; }
+                    WriteFrame(response);
+                }
             }
             return 0;
         }
