@@ -25,7 +25,7 @@ test("Replay waits for smooth scrolling to settle before continuing", () => {
   assert.ok(recorder.includes("await waitForScrollSettled(el)"));
   assert.ok(recorder.includes("const fastScrollTo"));
   assert.ok(recorder.includes("duration = 260"));
-  assert.ok(recorder.includes("behavior: "instant""));
+  assert.ok(recorder.includes('behavior: "instant"'));
   assert.ok(recorder.includes("stableFrames >= 3"));
   assert.ok(recorder.includes("await waitForScrollSettled();"));
 });
