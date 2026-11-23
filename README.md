@@ -3,7 +3,7 @@
 A local-first workflow recording and replay product for explicitly authorized browser automation, with a standalone permission-gated Windows desktop agent.
 
 ## Windows desktop agent
-The supported desktop helper is a self-contained .NET 8 Windows x64 executable. It does not require Python, pip, or pynput. The Windows CI job builds and smoke-tests the Native Messaging protocol, then publishes the `satytracker78-windows-agent` artifact. Download it from the latest successful GitHub Actions run, extract it, and run `install-agent.bat`. See [desktop-agent/README.md](desktop-agent/README.md).
+The supported desktop helper is a self-contained .NET 8 Windows x64 executable. It does not require Python, pip, or pynput. The Windows CI job builds and smoke-tests the Native Messaging protocol, then publishes a source-only `satytracker78-windows-agent-source` artifact (no precompiled EXE). Download it from the latest successful GitHub Actions run, extract it, and run `build-and-install.bat`. A local .NET 8 SDK build produces the executable on your PC. See [desktop-agent/README.md](desktop-agent/README.md).
 
 The previous Python native host remains in the repository for historical compatibility, but its installer is deprecated. Use the standalone .NET agent for new installations.
 
