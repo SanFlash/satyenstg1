@@ -11,7 +11,7 @@ test("Manifest is a Chrome Manifest V3 extension with required capabilities", ()
   assert.equal(manifest.manifest_version, 3);
   assert.ok(manifest.permissions.includes("scripting"));
   assert.ok(manifest.permissions.includes("storage"));
-  assert.ok(manifest.permissions.includes("debugger"));
+  assert.ok(!manifest.permissions.includes("debugger"));
   assert.ok(manifest.background.service_worker);
 });
 
@@ -33,7 +33,9 @@ test("Tracker UI stays in the extension popup, not on the webpage", () => {
 });
 
 test("Clicks use browser-level mouse dispatch without an injected cursor", () => {
-  assert.match(recorder, /MF_MOUSE_CLICK/);
-  assert.ok(background.includes("Input.dispatchMouseEvent"));
+  assert.doesNotMatch(recorder, /MF_MOUSE_CLICK/);
+  assert.doesNotMatch(background, /chrome\.debugger|Input\.dispatchMouseEvent/);
   assert.ok(!recorder.includes("movePointer") && !recorder.includes("cursor.style"));
+  assert.match((fs.readFileSync(new URL("./popup.html", import.meta.url), "utf8")), /id="stepDelay"/);
+  assert.ok(background.includes("stepDelayMs"));
 });
