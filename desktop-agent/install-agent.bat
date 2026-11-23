@@ -6,7 +6,7 @@ echo SatyTracker78 standalone Windows agent installer
 echo Created by Satyendra Kumar Namdeo
 if not exist "%~dp0SatyTracker78.Agent.exe" (
  echo ERROR: SatyTracker78.Agent.exe is missing.
- echo Download and extract the satytracker78-windows-agent CI artifact into this folder first.
+ echo Run build-and-install.bat first to compile the source locally.
  pause
  exit /b 1
 )
