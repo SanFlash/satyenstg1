@@ -19,20 +19,12 @@ function render(state) {
   if (state.lastError) show(state.lastError);
 }
 async function refresh() { render(await send({ type: "GET_STATE" })); }
-$("showOverlay").addEventListener("click", async () => {
-  try {
-    const tab = await activeTab();
-    const result = await send({ type: "SHOW_OVERLAY", tabId: tab.id });
-    if (!result.ok) throw new Error(result.error || "Could not show controls.");
-    show("Controls added to the active webpage. You can use them without reopening this popup.");
-  } catch (error) { show(error.message || String(error)); }
-});
 $("record").addEventListener("click", async () => {
   try {
     const tab = await activeTab();
     const result = await send({ type: "RECORD_START", tabId: tab.id });
     if (!result.ok) throw new Error(result.error || "Could not start recording.");
-    show("Recording started. Perform the task, then choose Finish on the page.");
+    show("Recording started. Perform the task, then reopen this popup and choose Finish recording.");
     await refresh();
   } catch (error) { show(error.message || String(error)); }
 });
@@ -46,7 +38,7 @@ $("play").addEventListener("click", async () => {
     const tab = await activeTab();
     const result = await send({ type: "LOOP_START", tabId: tab.id, delayMs: Number($("delay").value), stopOnError: $("stopOnError").checked });
     if (!result.ok) throw new Error(result.error || "Could not start replay.");
-    show("Repeat loop started. Use Stop on the page or in this popup to end it.");
+    show("Repeat loop started. Reopen this popup and use Stop replay to end it.");
     await refresh();
   } catch (error) { show(error.message || String(error)); }
 });
