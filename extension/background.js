@@ -7,6 +7,7 @@ async function dispatch(tabId){
  let s=await state(); if(s.mode!=="replaying"||s.tabId!==tabId||s.inFlight)return;
  const step=s.steps[s.stepIndex]; if(!step){await save({...s,mode:"error",lastError:"The flow has no replayable step."});return;}
  let tab;try{tab=await chrome.tabs.get(tabId);}catch{await save({...s,mode:"idle",lastError:"The target tab was closed."});return;}
+ if(tab.status!=="complete")return;
  if(step.url&&tab.url){try{if(new URL(step.url).origin!==new URL(tab.url).origin){await save({...s,lastError:"Waiting for the recorded website to open: "+new URL(step.url).origin});return;}}catch{}}
  if(!await inject(tabId))return;
  s=await state();if(s.mode!=="replaying"||s.inFlight)return;
