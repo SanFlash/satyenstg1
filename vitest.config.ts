@@ -1,1 +1,2 @@
+/* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI. */
 import {defineConfig} from "vitest/config";export default defineConfig({test:{include:["src/**/*.test.ts"],environment:"node",coverage:{reporter:["text","html"]}}});
