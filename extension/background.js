@@ -1,6 +1,6 @@
 const KEY = "mouseflowExtensionState";
 const dispatchingTabs = new Set();
-const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "" };
+const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stepDelayMs: 450, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "" };
 
 async function getState() {
   const data = await chrome.storage.local.get(KEY);
@@ -92,7 +92,7 @@ async function replayResult(message, sender) {
     state.iterations += 1;
   }
   await setState(state);
-  const wait = state.stepIndex === 0 ? state.delayMs : 450;
+  const wait = state.stepIndex === 0 ? state.delayMs : state.stepDelayMs;
   setTimeout(() => dispatch(state.tabId), wait);
 }
 
@@ -147,30 +147,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const tabId = message.tabId ?? senderTabId ?? state.tabId;
         if (!state.steps.length) { sendResponse({ ok: false, error: "Record at least one action before starting the repeat loop." }); return; }
         if (tabId == null) { sendResponse({ ok: false, error: "Open the page containing the recorded task." }); return; }
-        state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
+        state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stepDelayMs: Math.max(0, Math.min(3000, Number(message.stepDelayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
         await setState(state);
         await dispatch(tabId);
         sendResponse({ ok: true });
-        return;
-      }
-      case "MF_MOUSE_CLICK": {
-        if (senderTabId == null) { sendResponse({ ok: false, error: "Mouse input requires a browser tab." }); return; }
-        const x = Number(message.x), y = Number(message.y);
-        if (!Number.isFinite(x) || !Number.isFinite(y)) { sendResponse({ ok: false, error: "Invalid mouse coordinates." }); return; }
-        const target = { tabId: senderTabId };
-        let attached = false;
-        try {
-          await chrome.debugger.attach(target, "1.3");
-          attached = true;
-          await chrome.debugger.sendCommand(target, "Input.dispatchMouseEvent", { type: "mouseMoved", x, y, button: "none" });
-          await chrome.debugger.sendCommand(target, "Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "left", clickCount: 1 });
-          await chrome.debugger.sendCommand(target, "Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 });
-          sendResponse({ ok: true });
-        } catch (error) {
-          sendResponse({ ok: false, error: "Browser-level mouse input failed: " + (error?.message || String(error)) });
-        } finally {
-          if (attached) { try { await chrome.debugger.detach(target); } catch {} }
-        }
         return;
       }
       case "REPLAY_RESULT":
@@ -208,7 +188,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       state.iterations += 1;
     }
     await setState(state);
-    const wait = state.stepIndex === 0 ? state.delayMs : 650;
+    const wait = state.stepIndex === 0 ? state.delayMs : state.stepDelayMs;
     setTimeout(() => dispatch(tabId), wait);
     return;
   }
