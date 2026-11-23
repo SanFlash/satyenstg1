@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI. */
 (() => {
   if (window.__mouseflowContentInstalled) return;
   window.__mouseflowContentInstalled = true;
