@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI. */
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
