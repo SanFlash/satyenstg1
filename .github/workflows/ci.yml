@@ -19,6 +19,8 @@ jobs:
         run: node --test extension/*.test.js
       - name: Test native desktop helper safety contract
         run: python -m unittest discover -s extension/native-host -p test_host.py
+      - name: Test native messaging host stdio protocol
+        run: python extension/native-host/verify-host.py extension/native-host/host.py
       - name: Validate extension JavaScript
         run: |
           node --check extension/background.js
