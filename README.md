@@ -1,15 +1,15 @@
-# MouseFlow AI
+# SatyTracker78
 
-A local-first workflow design and monitoring workspace for explicitly authorized browser/desktop automation.
+A local-first workflow recording and replay product for explicitly authorized browser automation, with an optional permission-gated Windows desktop helper.
 
 ## Reliability and deployment
 - Vite + React + TypeScript dashboard, deployable as a static SPA on Vercel.
 - Defensive workflow import validation: JSON syntax, field types, allowed actions, locator strategies, unique step IDs, bounds and size limits.
 - Local storage access guarded against unavailable storage, malformed JSON and quota/security exceptions.
-- Execution is safely blocked until a real authenticated local adapter is installed; a queued dashboard record is never represented as a successful run.
+- Execution in the dashboard remains safely blocked until a real authenticated local adapter is installed; a queued dashboard record is never represented as a successful run.
 - Browser profile data remains local. Export workspace backups before clearing browser data.
 
-## Chrome extension — Record & Repeat
+## Single-worker execution architecture\n\nThe Manifest V3 `background.js` service worker is the single orchestration point for browser workflow state and the optional native desktop-helper connection. The popup is a control surface only; it does not own a separate native connection. Browser tabs/content scripts act as page adapters, while the Windows Native Messaging host is an optional OS-input adapter. This avoids creating a separate orchestration worker for each website or tab.\n\nThe native helper connection is permission-gated and is not silently substituted for DOM replay. Full dashboard-to-local-agent pairing and automatic conversion of browser recordings into OS-level input are not yet implemented.\n\n## Chrome extension — Record & Repeat
 
 A Manifest V3 extension is included in `extension/`. Load that folder through `chrome://extensions` → Developer mode → Load unpacked. The default flow records supported browser DOM interactions once and repeats them until the user stops the loop. The extension also injects a floating control panel into the active webpage so recording and stopping are visible on-page. It records interaction steps, not a screen-video file. See [extension/README.md](extension/README.md) for setup, supported actions and limitations.
 
