@@ -18,7 +18,7 @@ test("Background and page recorder use the same replay command", () => {
 });
 
 test("Replay acknowledgements include the exact step index", () => {
-  assert.match(recorder, /type: "REPLAY_RESULT", \{ stepIndex, ok: true \}/);
+  assert.match(recorder, /send\("REPLAY_RESULT", \{ stepIndex, ok: true \}\)/);
   assert.match(background, /message\.stepIndex !== state\.stepIndex/);
 });
 
