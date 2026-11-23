@@ -10,9 +10,8 @@ echo  ==========================================
 echo.
 set /p EXT_ID=Paste your SatyTracker78 Extension ID from chrome://extensions:
 if "%EXT_ID%"=="" goto :badid
-if not "%EXT_ID:~32,1%"=="" goto :badid
-if "%EXT_ID:~31,1%"=="" goto :badid
-echo %EXT_ID%| findstr /r /x "[a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p][a-p]" >nul
+rem Validate Chrome's 32-character extension ID without FINDSTR's command-length limit.
+powershell -NoProfile -Command "if ($env:EXT_ID -notmatch '^[a-p]{32}$') { exit 1 }"
 if errorlevel 1 goto :badid
 set "PYTHON_EXE="
 for /f "delims=" %%P in ('where python 2^>nul') do if not defined PYTHON_EXE set "PYTHON_EXE=%%P"
