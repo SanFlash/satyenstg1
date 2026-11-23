@@ -72,6 +72,21 @@
   (document.documentElement || document).appendChild(cursor);
   let cursorX = Math.max(24, innerWidth * .18), cursorY = Math.max(32, innerHeight * .22), cursorVisible = false, lastHover = null, moveSequence = 0;
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+  // Wait for the browser's smooth scroll animation to settle before moving/clicking.
+  const waitForScrollSettled = async (target = null, maxWait = 2200) => {
+    const started = performance.now();
+    let previous = null, stableFrames = 0;
+    while (performance.now() - started < maxWait) {
+      await new Promise(requestAnimationFrame);
+      const rect = target?.isConnected ? target.getBoundingClientRect() : null;
+      const current = [window.scrollX, window.scrollY, rect?.top ?? 0, rect?.left ?? 0];
+      if (previous && current.every((value,index) => Math.abs(value-previous[index]) < 0.5)) stableFrames++;
+      else stableFrames = 0;
+      previous = current;
+      if (stableFrames >= 5) break;
+    }
+    await sleep(60);
+  };
   const hitTarget = (x,y) => {const hit=document.elementFromPoint(Math.max(0,Math.min(innerWidth-1,x)),Math.max(0,Math.min(innerHeight-1,y)));return hit instanceof Element && !cursor.contains(hit) ? hit : null;};
   const dispatchMouse = (el,type,x,y) => {if(!el?.isConnected)return;const common={bubbles:true,cancelable:true,composed:true,clientX:x,clientY:y,screenX:x+window.screenX,screenY:y+window.screenY,view:window};if(type.startsWith("pointer"))el.dispatchEvent(new PointerEvent(type,{...common,pointerId:1,pointerType:"mouse",isPrimary:true,button:-1,buttons:0}));else el.dispatchEvent(new MouseEvent(type,{...common,button:0,buttons:0}));};
   const updateHover = (x,y) => {const next=hitTarget(x,y);if(next!==lastHover){if(lastHover){dispatchMouse(lastHover,"pointerout",x,y);dispatchMouse(lastHover,"mouseout",x,y);}if(next){dispatchMouse(next,"pointerover",x,y);dispatchMouse(next,"mouseover",x,y);}lastHover=next;}if(next){dispatchMouse(next,"pointermove",x,y);dispatchMouse(next,"mousemove",x,y);}};
@@ -100,7 +115,7 @@
     ring.style.cssText=`position:fixed;left:0;top:0;width:18px;height:18px;border:2px solid #6558f5;border-radius:50%;pointer-events:none;z-index:2147483646;transform:translate3d(${cursorX+3}px,${cursorY+3}px,0) scale(.45);opacity:.9;transition:transform .28s ease,opacity .28s ease;`;
     document.documentElement.appendChild(ring);requestAnimationFrame(()=>{ring.style.transform=`translate3d(${cursorX+3}px,${cursorY+3}px,0) scale(1.8)`;ring.style.opacity="0";});setTimeout(()=>ring.remove(),320);
   };
-  const moveToElement = async el => {el.scrollIntoView({block:"center",inline:"center",behavior:"smooth"});await sleep(260);const r=el.getBoundingClientRect();await moveCursor(r.left+r.width*.5,r.top+r.height*.5);await sleep(140);};
+  const moveToElement = async el => {el.scrollIntoView({block:"center",inline:"center",behavior:"smooth"});await waitForScrollSettled(el);const r=el.getBoundingClientRect();await moveCursor(r.left+r.width*.5,r.top+r.height*.5);await sleep(140);};
   // Synthetic page-level events avoid Chrome's debugger notification.
   // They are not trusted hardware input and cannot move the OS cursor.
   const humanClick=async el=>{
@@ -120,7 +135,7 @@
   const setValue=(el,value)=>{const p=el instanceof HTMLTextAreaElement?HTMLTextAreaElement.prototype:el instanceof HTMLSelectElement?HTMLSelectElement.prototype:HTMLInputElement.prototype;const setter=Object.getOwnPropertyDescriptor(p,"value")?.set;if(setter)setter.call(el,value);else el.value=value;};
   const execute=async(step,index)=>{
     try{
-      if(step.action==="scroll"){window.scrollTo({left:step.x||0,top:step.y||0,behavior:"smooth"});await new Promise(r=>setTimeout(r,350));}
+      if(step.action==="scroll"){window.scrollTo({left:step.x||0,top:step.y||0,behavior:"smooth"});await waitForScrollSettled();}
       else{const el=await waitForTarget(step);if(step.action==="click")await humanClick(el);else if(step.action==="input"){await moveToElement(el);el.focus({preventScroll:true});if(el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))el.checked=Boolean(step.checked);else setValue(el,step.value??"");el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}));}}
       await send("REPLAY_RESULT",{stepIndex:index,ok:true});
     }catch(error){await send("REPLAY_RESULT",{stepIndex:index,ok:false,error:error instanceof Error?error.message:String(error)});}
