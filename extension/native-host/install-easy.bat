@@ -1,90 +1,96 @@
 @echo off
 setlocal EnableExtensions
-title SatyTracker78 - Easy Desktop Helper Setup
+title SatyTracker78 - Desktop Helper Repair
 cd /d "%~dp0"
 echo.
 echo  ==========================================
-echo       SatyTracker78 Desktop Helper
+echo       SatyTracker78 Desktop Helper Setup
 echo       Created by Satyendra Kumar Namdeo
 echo  ==========================================
 echo.
-set /p EXT_ID=Paste your SatyTracker78 Extension ID from chrome://extensions:
+set /p EXT_ID=Paste the current SatyTracker78 Extension ID from chrome://extensions:
 if "%EXT_ID%"=="" goto :badid
-rem Validate Chrome's 32-character extension ID without FINDSTR's command-length limit.
 powershell -NoProfile -Command "if ($env:EXT_ID -notmatch '^[a-p]{32}$') { exit 1 }"
 if errorlevel 1 goto :badid
-set "PYTHON_EXE="
-for /f "delims=" %%P in ('where python 2^>nul') do if not defined PYTHON_EXE set "PYTHON_EXE=%%P"
-if not defined PYTHON_EXE (
-  echo Python was not found. Opening the official Python download page...
+
+rem Prefer the Python Launcher; it avoids stale Windows Store aliases from PATH.
+set "BASE_PYTHON="
+for /f "delims=" %%P in ('py -3 -c "import sys; print(sys.executable)" 2^>nul') do if not defined BASE_PYTHON set "BASE_PYTHON=%%P"
+if not defined BASE_PYTHON for /f "delims=" %%P in ('where python 2^>nul') do if not defined BASE_PYTHON set "BASE_PYTHON=%%P"
+if not defined BASE_PYTHON (
+  echo Python 3 was not found. Opening the official Python download page...
   start "" "https://www.python.org/downloads/windows/"
-  echo Install Python and select "Add Python to PATH", then run this installer again.
+  echo Install Python 3.10+ with the Tcl/Tk option enabled, then run this installer again.
   pause
   exit /b 1
 )
+
 set "INSTALL_DIR=%LOCALAPPDATA%\SatyTracker78"
+set "VENV_DIR=%INSTALL_DIR%\venv"
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+echo.
+echo Creating an isolated Python environment...
+"%BASE_PYTHON%" -m venv "%VENV_DIR%"
+if errorlevel 1 goto :venvfailed
+set "PYTHON_EXE=%VENV_DIR%\Scripts\python.exe"
+if not exist "%PYTHON_EXE%" goto :venvfailed
 copy /y "%~dp0host.py" "%INSTALL_DIR%\host.py" >nul
 if errorlevel 1 goto :failed
-echo.
-echo Checking Python package installer...
-"%PYTHON_EXE%" -m pip --version >nul 2>&1
-if not errorlevel 1 goto :install_dependency
-
-echo pip is missing. Trying Python's built-in ensurepip...
-"%PYTHON_EXE%" -m ensurepip --upgrade
-"%PYTHON_EXE%" -m pip --version >nul 2>&1
-if not errorlevel 1 goto :install_dependency
-
-echo ensurepip is unavailable. Downloading the official pip bootstrap...
-set "GETPIP=%TEMP%\satytracker78-get-pip.py"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "try { Invoke-WebRequest -UseBasicParsing 'https://bootstrap.pypa.io/get-pip.py' -OutFile $env:GETPIP; exit 0 } catch { Write-Host $_; exit 1 }"
-if errorlevel 1 goto :pipfailed
-"%PYTHON_EXE%" "%GETPIP%" --user
-if errorlevel 1 goto :pipfailed
-del "%GETPIP%" >nul 2>&1
-
-:install_dependency
-echo.
-echo Installing the required desktop input component...
-"%PYTHON_EXE%" -m pip install --user --upgrade pynput
+copy /y "%~dp0verify-host.py" "%INSTALL_DIR%\verify-host.py" >nul
 if errorlevel 1 goto :failed
+
+echo.
+echo Installing desktop input dependency into the isolated environment...
+"%PYTHON_EXE%" -m pip install --disable-pip-version-check --upgrade pip pynput
+if errorlevel 1 goto :pipfailed
 "%PYTHON_EXE%" -c "import tkinter,pynput; print('Python desktop dependencies: OK')"
 if errorlevel 1 goto :runtimefailed
+
 echo.
-echo Registering SatyTracker78 with Chrome...
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$m=@{name='com.satytracker78.desktop';description='SatyTracker78 permission-gated desktop input';path=$env:PYTHON_EXE;args=@((Join-Path $env:LOCALAPPDATA 'SatyTracker78\host.py'));type='stdio';allowed_origins=@('chrome-extension://'+$env:EXT_ID+'/')}; [IO.File]::WriteAllText((Join-Path $env:LOCALAPPDATA 'SatyTracker78\com.satytracker78.desktop.json'),($m|ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false))"
+echo Verifying that the native host starts and speaks Chrome's framing protocol...
+"%PYTHON_EXE%" "%INSTALL_DIR%\verify-host.py" "%INSTALL_DIR%\host.py"
+if errorlevel 1 goto :protocolfailed
+
+echo.
+echo Registering the verified helper with Chrome...
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$m=@{name='com.satytracker78.desktop';description='SatyTracker78 permission-gated desktop input';path=$env:PYTHON_EXE;args=@((Join-Path $env:LOCALAPPDATA 'SatyTracker78\host.py'));type='stdio';allowed_origins=@('chrome-extension://'+$env:EXT_ID+'/')}; $p=Join-Path $env:LOCALAPPDATA 'SatyTracker78\com.satytracker78.desktop.json'; [IO.File]::WriteAllText($p,($m|ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false)); $j=Get-Content -Raw $p|ConvertFrom-Json; if ($j.name -ne 'com.satytracker78.desktop' -or $j.type -ne 'stdio' -or -not (Test-Path $j.path) -or -not (Test-Path $j.args[0])) { throw 'Native host manifest validation failed' }"
 if errorlevel 1 goto :failed
 reg add "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.satytracker78.desktop" /ve /t REG_SZ /d "%INSTALL_DIR%\com.satytracker78.desktop.json" /f >nul
 if errorlevel 1 goto :failed
+reg query "HKCU\Software\Google\Chrome\NativeMessagingHosts\com.satytracker78.desktop" /ve
+if errorlevel 1 goto :failed
+
 echo.
-echo  SUCCESS! SatyTracker78 Desktop Helper is installed.
-echo  1. Restart Chrome.
+echo  SUCCESS - helper installed and protocol self-test passed.
+echo  1. Fully exit Chrome (all windows), then reopen it.
 echo  2. Open chrome://extensions and reload SatyTracker78.
-echo  3. Open the extension and click Enable desktop helper.
+echo  3. Click Enable desktop helper and approve the Windows prompt.
 echo.
-echo  You will be asked for local permission before desktop input is enabled.
+echo  Log: %INSTALL_DIR%\native-host.log
 pause
 exit /b 0
-:runtimefailed
-echo.
-echo Python was found, but tkinter or pynput cannot be imported.
-echo Repair or reinstall Python 3.10+ with Tcl/Tk support enabled, then run this installer again.
+
+:badid
+echo Invalid extension ID. Copy the 32-character ID shown under SatyTracker78.
+pause
+exit /b 1
+:venvfailed
+echo Could not create a Python virtual environment. Install Python 3.10+ from python.org with Tcl/Tk enabled.
 pause
 exit /b 1
 :pipfailed
-echo.
-echo Could not install pip automatically. Check your internet connection and Python installation.
-echo You can install Python from https://www.python.org/downloads/windows/ and select Add Python to PATH.
+echo Could not install pynput. Check internet access and rerun this repair installer.
 pause
 exit /b 1
-:badid
-echo.
-echo Invalid extension ID. Copy the 32-character ID shown under SatyTracker78 at chrome://extensions.
+:runtimefailed
+echo tkinter or pynput is unavailable in this Python installation. Reinstall Python with Tcl/Tk support.
+pause
+exit /b 1
+:protocolfailed
+echo The native host failed its startup/protocol self-test. See native-host.log for details.
 pause
 exit /b 1
 :failed
-echo.
-echo Setup did not finish. Check that Python is installed and try again.
+echo Setup failed before registration completed. See the error above and rerun this installer.
 pause
 exit /b 1
