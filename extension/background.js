@@ -68,7 +68,7 @@ function connectNativeHelper() {
     catch (error) { closeNativePort(false); reject(error); }
   });
 }
-const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stepDelayMs: 450, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "" };
+const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stepDelayMs: 900, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "", inFlightNavigationStarted: false };
 
 async function getState() {
   const data = await chrome.storage.local.get(KEY);
@@ -124,7 +124,7 @@ async function dispatch(tabId) {
     state = await getState();
     if (state.mode !== "replaying" || state.inFlight) return;
     state.inFlight = true;
-    state.inFlightUrl = tab.url || "";
+    state.inFlightUrl = tab.url || "";\n    state.inFlightNavigationStarted = false;
     await setState(state);
     try {
       await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step }, Number.isInteger(step.frameId) ? { frameId: step.frameId } : {});
@@ -227,7 +227,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const tabId = message.tabId ?? senderTabId ?? state.tabId;
         if (!state.steps.length) { sendResponse({ ok: false, error: "Record at least one action before starting the repeat loop." }); return; }
         if (tabId == null) { sendResponse({ ok: false, error: "Open the page containing the recorded task." }); return; }
-        state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stepDelayMs: Math.max(0, Math.min(3000, Number(message.stepDelayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
+        state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, inFlightNavigationStarted: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stepDelayMs: Math.max(0, Math.min(3000, Number(message.stepDelayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
         await setState(state);
         await dispatch(tabId);
         sendResponse({ ok: true });
