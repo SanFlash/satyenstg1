@@ -6,7 +6,7 @@
   const clean = v => String(v||"").replace(/\s+/g," ").trim();
   const privateEl = el => !el || el.matches('input[type="password"],input[type="file"],input[autocomplete*="cc-"],input[autocomplete*="one-time-code"],[data-mouseflow-private]') || !!el.closest("[data-mouseflow-private]");
   const visible = el => { if(!el?.isConnected)return false; const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=="none"&&s.visibility!=="hidden"&&Number(s.opacity)!==0&&r.width>0&&r.height>0; };
-  const roleOf = el => el.getAttribute("role") || ({BUTTON:"button",A:"link",SELECT:"combobox",TEXTAREA:"textbox",INPUT:["submit","button"].includes(el.type)?"button":["checkbox","radio"].includes(el.type)?el.type:"textbox"})[el.tagName] || "";
+  const roleOf = el => el.getAttribute("role") || (el.isContentEditable ? "textbox" : ({BUTTON:"button",A:"link",SELECT:"combobox",TEXTAREA:"textbox",INPUT:["submit","button"].includes(el.type)?"button":["checkbox","radio"].includes(el.type)?el.type:"textbox"})[el.tagName] || "");
   const labelOf = el => clean(el.getAttribute("aria-label")||el.getAttribute("title")||el.labels?.[0]?.innerText||el.innerText||el.value||el.getAttribute("alt"));
   const selectorFor = el => {
     if(el.id)return "#"+CSS.escape(el.id);
@@ -20,13 +20,13 @@
   const record=(action,el,extra={})=>{
     if(privateEl(el))return;
     const step={action,url:location.href,at:Date.now(),...describe(el),...extra};
-    if(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement||el instanceof HTMLSelectElement){if(["checkbox","radio"].includes(el.type))step.checked=el.checked;else step.value=String(el.value).slice(0,2000);}
+    if(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement||el instanceof HTMLSelectElement){if(["checkbox","radio"].includes(el.type))step.checked=el.checked;else step.value=String(el.value).slice(0,2000);} else if(el.isContentEditable) step.value=String(el.innerText||"").slice(0,2000);
     send("RECORD_STEP",{step});
   };
 
   document.addEventListener("click",e=>{const t=e.target instanceof Element?e.target:e.target?.parentElement;const el=t?.closest('button,a,[role="button"],input[type="button"],input[type="submit"],summary,[data-testid]');if(el)record("click",el);},true);
   document.addEventListener("change",e=>{const el=e.target;if(el instanceof HTMLSelectElement||el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))record("input",el);},true);
-  document.addEventListener("input",e=>{const el=e.target;if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement)||privateEl(el))return;if(el instanceof HTMLInputElement&&!["text","search","email","url","tel","number"].includes(el.type))return;clearTimeout(el.__mfTimer);el.__mfTimer=setTimeout(()=>record("input",el),450);},true);
+  document.addEventListener("input",e=>{const el=e.target;if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement||el instanceof HTMLElement&&el.isContentEditable)||privateEl(el))return;if(el instanceof HTMLInputElement&&!["text","search","email","url","tel","number"].includes(el.type))return;clearTimeout(el.__mfTimer);el.__mfTimer=setTimeout(()=>record("input",el),450);},true);
   // Capture one settled scroll position instead of flooding the flow with every scroll frame.
   let scrollCaptureTimer = 0;
   document.addEventListener("scroll",e=>{
@@ -63,7 +63,7 @@
   const resolve=step=>{
     const h=hintsFor(step);let exact=null;try{if(step.selector)exact=document.querySelector(step.selector);}catch{}
     if(exact&&visible(exact)&&!privateEl(exact)&&(!h.text||score(exact,step,h)>=10))return exact;
-    const selectors=['button','a','[role="button"]','input[type="button"]','input[type="submit"]','input[type="text"]','textarea','select','[aria-label]','[title]','[data-testid]','[data-test]'];
+    const selectors=['button','a','[role="button"]','[role="link"]','[role="textbox"]','[role="combobox"]','input[type="button"]','input[type="submit"]','input[type="text"]','textarea','select','[contenteditable="true"]','[aria-label]','[title]','[data-testid]','[data-test]'];
     const all=new Set();for(const q of selectors)document.querySelectorAll(q).forEach(el=>all.add(el));
     const ranked=[...all].map(el=>({el,s:score(el,step,h)})).filter(x=>x.s>=7).sort((a,b)=>b.s-a.s);
     if(ranked.length&&(ranked.length===1||ranked[0].s-ranked[1].s>=2||ranked[0].s>=18))return ranked[0].el;
@@ -164,7 +164,7 @@
   const execute=async(step,index)=>{
     try{
       if(step.action==="scroll"){await fastScrollTo(step.x||0,step.y||0);await waitForScrollSettled();}
-      else{const el=await waitForTarget(step);if(step.action==="click")await humanClick(el);else if(step.action==="input"){await moveToElement(el);el.focus({preventScroll:true});if(el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))el.checked=Boolean(step.checked);else setValue(el,step.value??"");el.dispatchEvent(new Event("input",{bubbles:true}));el.dispatchEvent(new Event("change",{bubbles:true}));}}
+      else{const el=await waitForTarget(step);if(step.action==="click")await humanClick(el);else if(step.action==="input"){await moveToElement(el);el.focus({preventScroll:true});if(el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))el.checked=Boolean(step.checked);else if(el.isContentEditable)el.textContent=String(step.value??"");else setValue(el,step.value??"");el.dispatchEvent(new Event("input",{bubbles:true,composed:true}));el.dispatchEvent(new Event("change",{bubbles:true,composed:true}));}}
       await send("REPLAY_RESULT",{stepIndex:index,ok:true});
     }catch(error){await send("REPLAY_RESULT",{stepIndex:index,ok:false,error:error instanceof Error?error.message:String(error)});}
   };
