@@ -82,7 +82,7 @@ async function setState(value) {
 }
 async function inject(tabId) {
   try {
-    await chrome.scripting.executeScript({ target: { tabId }, files: ["recorder.js"] });
+    await chrome.scripting.executeScript({ target: { tabId, allFrames: true }, files: ["recorder.js"] });
     return true;
   } catch {
     const state = await getState();
@@ -114,15 +114,11 @@ async function dispatch(tabId) {
       return;
     }
     if (tab.status !== "complete") return;
-    if (step.url && tab.url) {
-      try {
-        if (new URL(step.url).origin !== new URL(tab.url).origin) {
-          state.mode = "error";
-          state.lastError = "Replay reached a different website origin. Cross-site navigation is not supported in one recording.";
-          await setState(state);
-          return;
-        }
-      } catch {}
+    if (tab.url && !/^https?:\\/\\//i.test(tab.url)) {
+      state.mode = "error";
+      state.lastError = "For safety, replay is limited to regular HTTP and HTTPS pages.";
+      await setState(state);
+      return;
     }
     if (!(await inject(tabId))) return;
     state = await getState();
@@ -131,7 +127,7 @@ async function dispatch(tabId) {
     state.inFlightUrl = tab.url || "";
     await setState(state);
     try {
-      await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step });
+      await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step }, Number.isInteger(step.frameId) ? { frameId: step.frameId } : {});
     } catch {
       state = await getState();
       state.mode = "error";
@@ -214,7 +210,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
       case "RECORD_STEP":
         if (state.mode === "recording" && state.tabId === senderTabId && message.step && state.steps.length < 2000) {
-          state.steps.push(message.step);
+          state.steps.push({ ...message.step, frameId: Number.isInteger(sender.frameId) ? sender.frameId : 0 });
           await setState(state);
         }
         sendResponse({ ok: true, count: state.steps.length });
