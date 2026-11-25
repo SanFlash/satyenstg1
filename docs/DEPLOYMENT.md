@@ -1,5 +1,8 @@
 # Deployment
 
+<p align="center"><img src="assets/ci-release-flow.svg" alt="Animated deployment and release flow" width="100%"></p>
+
+
 ## Vercel
 Framework Vite; install npm install; build npm run build; output dist. No environment variables are required. Client-side SPA; workflow data is in browser localStorage.
 
