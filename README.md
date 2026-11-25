@@ -26,6 +26,9 @@
 
 ## ✨ GSAP-powered animated product experience
 
+<p align="center"><img src="docs/assets/system-overview.svg" alt="Animated overview of the SatyTracker78 product experience" width="100%"></p>
+
+
 > **Explore the interactive guide:** [Open the GSAP product walkthrough source](docs/interactive-guide/index.html)
 
 GitHub README pages do not execute embedded JavaScript, so GSAP timelines cannot run directly inside the README itself. To deliver the full moving experience without pretending GitHub supports that, this repository now includes a separate, responsive interactive guide built with **GSAP 3.15.1**, **ScrollTrigger** and **MotionPathPlugin**. The README keeps lightweight animated SVG diagrams as a compatible visual fallback.
@@ -63,6 +66,9 @@ The URL above is a deployment pattern, not a claim that GitHub Pages is already 
 
 ## Product overview
 
+<p align="center"><img src="docs/assets/product-architecture.svg" alt="Animated product architecture" width="100%"></p>
+
+
 SatyTracker78 is organized into three related parts:
 
 | Part | Purpose | Current role |
@@ -76,6 +82,9 @@ The dashboard currently uses the **MouseFlow AI** product label in parts of its 
 > **Important distinction:** the extension's browser replay and the dashboard's workflow queue are separate execution paths. The dashboard currently records a blocked queue attempt rather than executing actions. A visual connection state in the dashboard is demonstrative and is not proof that a live extension or desktop agent has paired.
 
 ## Animated product walkthrough
+
+<p align="center"><img src="docs/assets/replay-walkthrough.svg" alt="Animated replay walkthrough" width="100%"></p>
+
 
 The diagrams below are designed as moving explainers: follow the animated signal to understand which component receives an action, what it does next, and where the boundaries are. They illustrate the architecture and workflow; they are not recordings of a live user session.
 
@@ -124,6 +133,9 @@ The diagrams below are designed as moving explainers: follow the animated signal
 
 ## 🎞️ Expanded animated visual library
 
+<p align="center"><img src="docs/assets/system-overview.svg" alt="Animated visual library overview" width="100%"></p>
+
+
 The repository now includes **10 animated SVG explainers** plus the interactive GSAP guide. SVG animations use lightweight native SVG motion so they also render directly in GitHub Markdown; the HTML guide adds richer GSAP timelines and interactive demonstrations.
 
 | Animated file | What it explains |
@@ -154,6 +166,9 @@ The repository now includes **10 animated SVG explainers** plus the interactive 
 ---
 
 ## ✨ What the product includes
+
+<p align="center"><img src="docs/assets/product-architecture.svg" alt="Animated product components" width="100%"></p>
+
 
 ### 1. Chrome extension — Record & Repeat
 
@@ -213,6 +228,9 @@ Current UI capabilities include:
 
 ## ⚡ Quick start
 
+<p align="center"><img src="docs/assets/recording-pipeline.svg" alt="Animated quick-start recording flow" width="100%"></p>
+
+
 ### Use the Chrome extension (browser workflow)
 
 1. Download or clone this repository.
@@ -231,6 +249,9 @@ For the optional Windows companion, follow the [Windows installation guide](#win
 ---
 
 ## 📦 Installation guides
+
+<p align="center"><img src="docs/assets/desktop-permission.svg" alt="Animated local installation and permission flow" width="100%"></p>
+
 
 ### Chrome extension — developer / unpacked installation
 
@@ -341,6 +362,9 @@ Vite prints the local development URL in the terminal. Open that URL in your bro
 
 ## 🎛️ Using the browser recorder
 
+<p align="center"><img src="docs/assets/recording-pipeline.svg" alt="Animated browser recorder workflow" width="100%"></p>
+
+
 ### Record a workflow
 
 1. Navigate to the target page.
@@ -372,6 +396,9 @@ A successful selector match is not a guarantee that the resulting action is appr
 ---
 
 ## 🔬 Browser recorder and replay — detailed behavior
+
+<p align="center"><img src="docs/assets/replay-state-machine.svg" alt="Animated browser replay state machine" width="100%"></p>
+
 
 This section describes what is actually captured and how the extension tries to find the same target later.
 
@@ -415,6 +442,9 @@ Start with a short flow and a conservative delay. A page's response time can var
 ---
 
 ## 🧭 How it works
+
+<p align="center"><img src="docs/assets/system-overview.svg" alt="Animated system architecture" width="100%"></p>
+
 
 ### Component architecture
 
@@ -490,6 +520,9 @@ The tree above highlights the main product areas; individual test and support fi
 
 ## 🧩 Dashboard — workflow management details
 
+<p align="center"><img src="docs/assets/dashboard-lifecycle.svg" alt="Animated dashboard workflow lifecycle" width="100%"></p>
+
+
 The React dashboard is useful for designing and organizing structured workflow definitions. It is not currently wired to the Chrome recorder's execution engine.
 
 ### Workflow definition model
@@ -523,6 +556,9 @@ The dashboard currently creates a history record with a `blocked` status and a m
 
 ## 🔐 Privacy and security
 
+<p align="center"><img src="docs/assets/security-boundaries.svg" alt="Animated security boundaries" width="100%"></p>
+
+
 SatyTracker78 is intended for transparent, user-authorized automation. Use it only on websites, accounts and devices where you have permission.
 
 ### Desktop permission model
@@ -552,6 +588,9 @@ Read the detailed [security model](docs/SECURITY.md).
 
 ## 🔌 Tracker integrations — status and boundaries
 
+<p align="center"><img src="docs/assets/security-boundaries.svg" alt="Animated integration security boundaries" width="100%"></p>
+
+
 SatyTracker78 has a documented research plan for provider-authorized, read-oriented integrations. It does **not** impersonate tracker clients, manipulate timers, spoof activity, or bypass employer policies.
 
 | Provider | Research / API surface | SatyTracker78 implementation status |
@@ -571,6 +610,9 @@ See [docs/tracker-integrations.md](docs/tracker-integrations.md) for the provide
 ---
 
 ## 🧰 Development and quality checks
+
+<p align="center"><img src="docs/assets/ci-release-flow.svg" alt="Animated development and CI pipeline" width="100%"></p>
+
 
 ### Install dependencies
 
@@ -609,6 +651,9 @@ The release should be treated as available only after the Windows workflow compl
 
 ## ☁️ Deployment
 
+<p align="center"><img src="docs/assets/ci-release-flow.svg" alt="Animated deployment pipeline" width="100%"></p>
+
+
 The dashboard is configured as a Vite static application for Vercel.
 
 **Build configuration**
@@ -627,6 +672,9 @@ See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 ---
 
 ## 🛠️ Troubleshooting
+
+<p align="center"><img src="docs/assets/replay-state-machine.svg" alt="Animated troubleshooting and recovery flow" width="100%"></p>
+
 
 <details>
 <summary><strong>The extension does not appear in Chrome</strong></summary>
@@ -693,6 +741,9 @@ Check the [GitHub Actions page](https://github.com/SanFlash/satyenstg1/actions) 
 
 ## 🗺️ Product roadmap
 
+<p align="center"><img src="docs/assets/workflow-lifecycle.svg" alt="Animated workflow lifecycle" width="100%"></p>
+
+
 The following are planned directions, not claims of already delivered functionality:
 
 - Complete authenticated pairing between dashboard, extension and local execution adapters.
@@ -704,6 +755,9 @@ The following are planned directions, not claims of already delivered functional
 ---
 
 ## 🤝 Contributing and support
+
+<p align="center"><img src="docs/assets/ci-release-flow.svg" alt="Animated contribution and release flow" width="100%"></p>
+
 
 Bug reports, reproducible steps and improvement proposals are welcome.
 
@@ -723,6 +777,9 @@ When reporting a problem, include:
 ---
 
 ## Creator and ownership
+
+<p align="center"><img src="docs/assets/system-overview.svg" alt="Animated SatyTracker78 project overview" width="100%"></p>
+
 
 **Created by Satyendra Kumar Namdeo**
 
