@@ -16,7 +16,7 @@
 [![React](https://img.shields.io/badge/Dashboard-React%2019-61DAFB?logo=react&logoColor=111827)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-[Interactive experience](docs/interactive-guide/index.html) · [Quick start](#-quick-start) · [Architecture](#-how-the-parts-fit-together) · [Security](#-privacy-and-security) · [Troubleshooting](#-troubleshooting)
+[Interactive GSAP guide source](docs/interactive-guide/index.html) · [Quick start](#-quick-start) · [Architecture](#-how-the-parts-fit-together) · [Security](#-privacy-and-security) · [Troubleshooting](#-troubleshooting)
 
 </div>
 
@@ -26,8 +26,8 @@
 
 This documentation uses **distinct visual systems** rather than repeating one animation: an architecture map, recording pipeline, replay state machine, permission lifecycle, dashboard lifecycle, security boundary map and CI release flow. Each diagram explains a different mechanism.
 
-> **[Launch the interactive GSAP experience →](docs/interactive-guide/index.html)**  
-> A responsive, full-page product tour with 3D scene transitions, a replay simulator, interactive component views, and section-specific motion.
+> **[Open the interactive GSAP guide source →](docs/interactive-guide/index.html)**  
+> A responsive product tour with 3D scene transitions, a replay simulator, interactive dashboard tabs, pointer-responsive depth and section-specific motion. To run it as an interactive page, clone the repository and serve it locally; GitHub's README/file viewer does not execute HTML JavaScript.
 
 The README uses purpose-built diagrams for each system area. GitHub Markdown displays these as static visuals; the separate HTML guide is where GSAP, scroll choreography, 3D transforms and interactive controls run. GitHub README pages cannot execute embedded GSAP or custom JavaScript.
 
@@ -159,6 +159,16 @@ CI and release documentation: [Deployment guide](docs/DEPLOYMENT.md). Security n
 
 Follow the [Windows installation guide](desktop-agent/README.md). Use only the package from a successful release, enter the exact extension ID during setup, and approve local permission only when required.
 
+### Preview the GSAP Motion Lab
+
+From the repository root, run:
+
+```bash
+python -m http.server 8000
+```
+
+Then open `http://localhost:8000/docs/interactive-guide/` in your browser. The guide loads GSAP from its CDN, so an internet connection is required. GitHub README pages cannot run this interactive HTML directly.
+
 ### Dashboard development
 
 See the [deployment guide](docs/DEPLOYMENT.md) for the dashboard's development and deployment workflow.
@@ -169,7 +179,7 @@ See the [deployment guide](docs/DEPLOYMENT.md) for the dashboard's development a
 
 | Guide | Contents |
 |---|---|
-| [Interactive GSAP guide](docs/interactive-guide/index.html) | Animated product tour and replay simulator |
+| [Interactive GSAP guide source](docs/interactive-guide/index.html) | Standalone HTML product tour with GSAP 3D scenes and replay simulator; run locally to interact |
 | [Architecture](docs/ARCHITECTURE.md) | Component boundaries and data flow |
 | [Deployment](docs/DEPLOYMENT.md) | Build and deployment guidance |
 | [Security](docs/SECURITY.md) | Sensitive-field exclusions and permission boundaries |
