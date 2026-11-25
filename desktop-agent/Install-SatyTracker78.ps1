@@ -9,7 +9,7 @@ $registryPath = 'HKCU:\Software\Google\Chrome\NativeMessagingHosts\' + $hostName
 
 Write-Host ''
 Write-Host 'SatyTracker78 Desktop Helper installer' -ForegroundColor Cyan
-Write-Host 'This installs the signed-off local helper for the current Windows user.'
+Write-Host 'This installs the SatyTracker78 local desktop companion for the current Windows user.'
 Write-Host 'No administrator access or separate .NET installation is required.'
 Write-Host ''
 
