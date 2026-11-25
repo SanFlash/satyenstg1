@@ -1,4 +1,4 @@
-/* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: MouseFlow AI. */
+/* Copyright (c) 2026 Satyendra Kumar Namdeo. All rights reserved. Project: SatyTracker78. */
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -12,6 +12,7 @@ test("Manifest is a Chrome Manifest V3 extension with required capabilities", ()
   assert.equal(manifest.manifest_version, 3);
   assert.ok(manifest.permissions.includes("scripting"));
   assert.ok(manifest.permissions.includes("storage"));
+  assert.ok(manifest.permissions.includes("nativeMessaging"));
   assert.ok(!manifest.permissions.includes("debugger"));
   assert.ok(manifest.background.service_worker);
 });
@@ -43,6 +44,21 @@ test("Replay acknowledgements include the exact step index", () => {
   assert.ok(background.includes("message.stepIndex !== state.stepIndex"));
 });
 
+test("Native desktop actions wait for correlated host acknowledgement", () => {
+  assert.match(background, /nativeRequests\s*=\s*new Map/);
+  assert.match(background, /requestId/);
+  assert.match(background, /await nativeRequest\("action"/);
+  assert.match(background, /NATIVE_REQUEST_TIMEOUT_MS/);
+  assert.match(background, /rejectNativeRequests/);
+  assert.doesNotMatch(background, /nativePort\.postMessage\(\{ command: "action"[\s\S]{0,100}?sendResponse\(\{ ok: true \}\)/);
+});
+
+test("Desktop permission remains explicit and can be revoked", () => {
+  assert.match(background, /nativeRequest\("arm"/);
+  assert.match(background, /closeNativePort\(true/);
+  assert.match(popup, /desktopStop/);
+});
+
 test("Tracker UI stays in the extension popup, not on the webpage", () => {
   assert.doesNotMatch(recorder, /mouseflow-ai-overlay|attachShadow|<section class=/);
   assert.doesNotMatch(popup, /showOverlay|on-page controls/i);
@@ -59,6 +75,6 @@ test("Clicks use browser-level mouse dispatch without an injected cursor", () =>
   assert.ok(recorder.includes("const c1x"));
   assert.ok(recorder.includes("requestAnimationFrame"));
   assert.ok(recorder.includes("clickFeedback"));
-  assert.match((fs.readFileSync(new URL("./popup.html", import.meta.url), "utf8")), /id="stepDelay"/);
+  assert.match(popup, /id="stepDelay"/);
   assert.ok(background.includes("stepDelayMs"));
 });
