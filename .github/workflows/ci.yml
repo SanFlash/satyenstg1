@@ -3,7 +3,6 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
 jobs:
   build-and-test:
@@ -65,9 +64,13 @@ jobs:
           path: desktop-agent/SatyTracker78-Windows-Setup.zip
           if-no-files-found: error
           retention-days: 30
-      - name: Publish downloadable Windows setup on tagged releases
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Publish or update the latest end-user download
+        if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: desktop-helper-latest
+          name: SatyTracker78 Desktop Helper (Latest)
           files: desktop-agent/SatyTracker78-Windows-Setup.zip
-          generate_release_notes: true
+          overwrite_files: true
+          make_latest: true
+          generate_release_notes: false
