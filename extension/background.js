@@ -68,11 +68,15 @@ function connectNativeHelper() {
     catch (error) { closeNativePort(false); reject(error); }
   });
 }
+const NEXT_STEP_ALARM = "satytracker78-next-step";
 const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stepDelayMs: 900, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "", inFlightNavigationStarted: false };
 
 async function getState() {
   const data = await chrome.storage.local.get(KEY);
   return { ...initial, ...(data[KEY] || {}) };
+}
+function scheduleNextStep(delayMs) {
+  chrome.alarms.clear(NEXT_STEP_ALARM).then(() => chrome.alarms.create(NEXT_STEP_ALARM, { when: Date.now() + Math.max(0, delayMs) }));
 }
 async function setState(value) {
   await chrome.storage.local.set({ [KEY]: value });
@@ -124,7 +128,8 @@ async function dispatch(tabId) {
     state = await getState();
     if (state.mode !== "replaying" || state.inFlight) return;
     state.inFlight = true;
-    state.inFlightUrl = tab.url || "";\n    state.inFlightNavigationStarted = false;
+    state.inFlightUrl = tab.url || "";
+    state.inFlightNavigationStarted = false;
     await setState(state);
     try {
       await chrome.tabs.sendMessage(tabId, { type: "MF_EXECUTE_STEP", stepIndex: state.stepIndex, step }, Number.isInteger(step.frameId) ? { frameId: step.frameId } : {});
@@ -157,7 +162,7 @@ async function replayResult(message, sender) {
   }
   await setState(state);
   const wait = state.stepIndex === 0 ? state.delayMs : state.stepDelayMs;
-  setTimeout(() => dispatch(state.tabId), wait);
+  scheduleNextStep(wait);
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -202,6 +207,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       case "RECORD_START": {
         const tabId = message.tabId ?? senderTabId;
         if (tabId == null) { sendResponse({ ok: false, error: "Open a normal website tab first." }); return; }
+        await chrome.alarms.clear(NEXT_STEP_ALARM);
         state = { ...initial, mode: "recording", tabId, steps: [] };
         await setState(state);
         const ok = await inject(tabId);
@@ -228,6 +234,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (!state.steps.length) { sendResponse({ ok: false, error: "Record at least one action before starting the repeat loop." }); return; }
         if (tabId == null) { sendResponse({ ok: false, error: "Open the page containing the recorded task." }); return; }
         state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, inFlightNavigationStarted: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stepDelayMs: Math.max(0, Math.min(3000, Number(message.stepDelayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
+        await chrome.alarms.clear(NEXT_STEP_ALARM);
         await setState(state);
         await dispatch(tabId);
         sendResponse({ ok: true });
@@ -238,6 +245,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ ok: true });
         return;
       case "LOOP_STOP":
+        await chrome.alarms.clear(NEXT_STEP_ALARM);
         state.mode = "idle";
         state.inFlight = false;
         state.lastError = "";
@@ -251,28 +259,51 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
+chrome.alarms.onAlarm.addListener(async alarm => {
+  if (alarm.name !== NEXT_STEP_ALARM) return;
+  const state = await getState();
+  if (state.mode === "replaying" && state.tabId != null && !state.inFlight) await dispatch(state.tabId);
+});
+
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status !== "complete") return;
   let state = await getState();
   if (state.tabId !== tabId) return;
+  if (changeInfo.status === "loading" && state.mode === "replaying" && state.inFlight) {
+    state.inFlightNavigationStarted = true;
+    await setState(state);
+    return;
+  }
+  if (changeInfo.status !== "complete") return;
   if (state.mode === "recording" || state.mode === "replaying" || state.mode === "idle") await inject(tabId);
   state = await getState();
-  // A full-page navigation unloads the content script before it can acknowledge a click.
-  // Treat the navigation as completion of that click, then resume on the newly loaded page.
-  if (state.mode === "replaying" && state.inFlight && state.inFlightUrl && tab?.url && tab.url !== state.inFlightUrl) {
+  if (state.mode === "replaying" && state.inFlight &&
+      (state.inFlightNavigationStarted || (state.inFlightUrl && tab?.url && tab.url !== state.inFlightUrl))) {
     state.inFlight = false;
     state.inFlightUrl = "";
+    state.inFlightNavigationStarted = false;
     state.stepIndex += 1;
     if (state.stepIndex >= state.steps.length) {
       state.stepIndex = 0;
       state.iterations += 1;
     }
     await setState(state);
-    const wait = state.stepIndex === 0 ? state.delayMs : state.stepDelayMs;
-    setTimeout(() => dispatch(tabId), wait);
+    scheduleNextStep(state.stepIndex === 0 ? state.delayMs : state.stepDelayMs);
     return;
   }
-  if (state.mode === "replaying" && !state.inFlight) dispatch(tabId);
+  if (state.mode === "replaying" && !state.inFlight) await dispatch(tabId);
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  const state = await getState();
+  if (state.mode === "replaying" && state.tabId != null) {
+    if (state.inFlight) {
+      state.inFlight = false;
+      state.inFlightUrl = "";
+      state.inFlightNavigationStarted = false;
+      await setState(state);
+    }
+    scheduleNextStep(250);
+  }
 });
 chrome.tabs.onRemoved.addListener(async tabId => {
   const state = await getState();
@@ -280,6 +311,8 @@ chrome.tabs.onRemoved.addListener(async tabId => {
     state.mode = "idle";
     state.inFlight = false;
     state.inFlightUrl = "";
+    state.inFlightNavigationStarted = false;
+    await chrome.alarms.clear(NEXT_STEP_ALARM);
     state.lastError = "Target tab was closed.";
     await setState(state);
   }
