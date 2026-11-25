@@ -34,8 +34,7 @@ Run **Uninstall-SatyTracker78.cmd** from the extracted setup folder. It removes 
 - Confirm the extension ID pasted during setup matches the ID shown at chrome://extensions.
 - Restart all Chrome processes after installation.
 - Re-run Setup-SatyTracker78.cmd to repair the helper registration.
-- The log is stored under LocalAppData\SatyTracker78
-ative-host.log.
+- The log is stored under LocalAppData\SatyTracker78\native-host.log.
 
 ## Security
 
