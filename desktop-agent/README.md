@@ -7,7 +7,7 @@ End-user Windows x64 companion for the SatyTracker78 Chrome extension.
 
 ## Install (no developer tools required)
 
-<p align="center"><img src="../docs/assets/desktop-permission.svg" alt="Animated Windows helper installation and permission flow" width="100%"></p>
+<p align="center"><img src="../docs/assets/replay-state-machine.svg" alt="Animated Windows helper installation and permission flow" width="100%"></p>
 
 
 1. Download and extract **SatyTracker78-Windows-Setup.zip** from the latest GitHub Release.
@@ -21,7 +21,7 @@ No separate .NET SDK, Python, pip, administrator access, or manual registry edit
 
 ## Uninstall
 
-<p align="center"><img src="../docs/assets/security-boundaries.svg" alt="Animated helper removal and permission boundary" width="100%"></p>
+<p align="center"><img src="../docs/assets/recording-pipeline.svg" alt="Animated helper removal and permission boundary" width="100%"></p>
 
 
 Run **Uninstall-SatyTracker78.cmd** from the extracted setup folder. It removes the current user's native messaging registration and installed SatyTracker78 folder, including its local log.
@@ -57,6 +57,6 @@ The source project remains in this directory. For development, use the .NET 8 SD
 
 The sequence shows the actual documented permission boundary: the helper is installed for the current Windows user, Chrome connects through Native Messaging, and desktop input remains disabled until the local Windows permission dialog is approved. Permission expires after five minutes; Stop or Chrome disconnect revokes it.
 
-<p align="center"><img src="../docs/assets/permission.gif" alt="Animated security boundaries" width="100%"></p>
+<p align="center"><img src="../docs/assets/workflow-lifecycle.svg" alt="Animated security boundaries" width="100%"></p>
 
 The diagrams are documentation visuals, not a live permission monitor. See the [full GSAP product guide](../docs/interactive-guide/index.html) and [repository README](../README.md) for the complete product walkthrough.
