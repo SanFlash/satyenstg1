@@ -29,7 +29,7 @@ This documentation uses a **visual language matched to the job**: a system map f
 > **[Launch the interactive GSAP experience →](docs/interactive-guide/index.html)**  
 > A responsive, full-page product tour with 3D scene transitions, a replay simulator, interactive component views, and section-specific motion.
 
-GitHub README pages do not execute embedded JavaScript, custom CSS, or GSAP timelines. The Markdown below therefore uses GitHub-compatible animated SVGs. The linked HTML guide is where GSAP, MotionPathPlugin, ScrollTrigger, pointer-responsive 3D and working interactions run.
+The README visuals use real animated GIF files committed to this repository. GitHub displays and plays these GIFs directly in Markdown; they do not depend on embedded JavaScript, custom CSS, GSAP, or a third-party image host. The separate HTML guide is an optional richer experience, not a requirement for README animations.
 
 ---
 
