@@ -24,7 +24,13 @@
     send("RECORD_STEP",{step});
   };
 
-  document.addEventListener("click",e=>{const t=e.target instanceof Element?e.target:e.target?.parentElement;const el=t?.closest('button,a,[role="button"],[role="link"],[role="menuitem"],[role="tab"],[role="option"],[role="checkbox"],[role="radio"],[role="switch"],[role="treeitem"],input[type="button"],input[type="submit"],summary,[data-testid]');if(el)record("click",el);},true);
+  document.addEventListener("click",e=>{
+    const t=e.target instanceof Element?e.target:e.target?.parentElement;
+    if(!t)return;
+    for(const pendingEl of [...pendingInputs.keys()])flushInput(pendingEl);
+    const el=t.closest('button,a,[role="button"],[role="link"],[role="menuitem"],[role="tab"],[role="option"],[role="checkbox"],[role="radio"],[role="switch"],[role="treeitem"],input[type="button"],input[type="submit"],summary,[data-testid]');
+    if(el)record("click",el);
+  },true);
   document.addEventListener("change",e=>{const el=e.target;if(el instanceof HTMLSelectElement||el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))record("input",el);},true);
   const pendingInputs = new Map();
   const flushInput = el => {
