@@ -1,7 +1,7 @@
 # SatyTracker78 Desktop Helper
 
 
-> **Visual documentation:** each section uses a purpose-built diagram for its subject. For animated 3D scenes and interactive controls, open the [GSAP Motion Lab](../docs/interactive-guide/index.html). GitHub README Markdown cannot run embedded GSAP or custom JavaScript.
+> **Visual documentation:** each section uses a purpose-built diagram for its subject. For animated 3D scenes and interactive controls, open the [GSAP Motion Lab](../../docs/interactive-guide/index.html). GitHub README Markdown cannot run embedded GSAP or custom JavaScript.
 
 Created by **Satyendra Kumar Namdeo**.
 
@@ -9,7 +9,7 @@ The supported Windows desktop helper is now the standalone .NET agent in [deskto
 
 ## Install the standalone agent
 
-<p align="center"><img src="../../docs/assets/desktop-permission.svg" alt="Animated Native Messaging setup flow" width="100%"></p>
+<p align="center"><img src="../../docs/assets/workflow-lifecycle.svg" alt="Animated Native Messaging setup flow" width="100%"></p>
 
 1. Open [GitHub Actions](https://github.com/SanFlash/satyenstg1/actions).
 2. Open the latest successful **CI** run on `main`.
