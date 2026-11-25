@@ -88,6 +88,29 @@ footer{padding:55px 0 70px;border-top:1px solid #1d2c42;background:linear-gradie
    el.addEventListener('pointerleave',()=>gsap.to(el,{rotateX:0,rotateY:0,duration:.6,ease:'elastic.out(1,.7)'}));
   });
  }
+ // Editorial scene choreography: every section gets its own entrance language.
+ gsap.utils.toArray('section').forEach((section,index)=>{
+  const heading=section.querySelector('.section-head h2');
+  const kicker=section.querySelector('.section-head .kicker');
+  if(heading) gsap.from(heading,{scrollTrigger:{trigger:section,start:'top 76%',once:true},y:76,rotateX:-42,transformPerspective:1100,transformOrigin:'50% 100%',clipPath:'inset(0 0 100% 0)',opacity:0,duration:1.05,ease:'power4.out'});
+  if(kicker) gsap.from(kicker,{scrollTrigger:{trigger:section,start:'top 78%',once:true},letterSpacing:'.65em',opacity:0,x:-24,duration:.8,ease:'power3.out'});
+  const paragraph=section.querySelector('.section-head p');
+  if(paragraph) gsap.from(paragraph,{scrollTrigger:{trigger:section,start:'top 70%',once:true},y:22,opacity:0,duration:.75,delay:.12,ease:'power2.out'});
+ });
+ // Distinct signatures: dashboard data cascades, capability columns unfold,
+ // install cards rise on alternating axes, and the hero responds to pointer depth.
+ gsap.from('.cap-col',{scrollTrigger:{trigger:'#capabilities',start:'top 72%',once:true},x:(i)=>i===0?-90:90,rotateY:(i)=>i===0?18:-18,z:-100,opacity:0,stagger:.16,duration:1.1,ease:'power4.out'});
+ gsap.from('.dash-stat',{scrollTrigger:{trigger:'.dashboard-window',start:'top 75%',once:true},y:28,scale:.7,opacity:0,stagger:.12,duration:.65,ease:'back.out(1.7)'});
+ gsap.from('.dash-row',{scrollTrigger:{trigger:'.dashboard-window',start:'top 70%',once:true},x:-35,opacity:0,stagger:.12,duration:.65,delay:.25,ease:'power3.out'});
+ gsap.from('.security-card h3,.security-card p',{scrollTrigger:{trigger:'#security',start:'top 68%',once:true},y:18,opacity:0,stagger:.09,duration:.6,ease:'power3.out'});
+ gsap.from('.install-card .stepnum',{scrollTrigger:{trigger:'#install',start:'top 75%',once:true},scale:1.8,rotate:18,opacity:0,stagger:.16,duration:.7,ease:'back.out(2)'});
+ const heroArt=$('heroArt');
+ if(heroArt){
+  heroArt.addEventListener('pointermove',e=>{if(e.pointerType==='touch')return;const r=heroArt.getBoundingClientRect(),px=(e.clientX-r.left)/r.width-.5,py=(e.clientY-r.top)/r.height-.5;gsap.to(heroArt,{rotateY:px*13,rotateX:-py*10,transformPerspective:1100,duration:.45,ease:'power2.out',overwrite:true});});
+  heroArt.addEventListener('pointerleave',()=>gsap.to(heroArt,{rotateX:0,rotateY:0,duration:.8,ease:'elastic.out(1,.65)'}));
+ }
+ // Scroll-driven camera drift gives section headings subtle depth.
+ gsap.utils.toArray('.section-head').forEach((head,i)=>gsap.to(head,{y:i%2===0?-16:14,ease:'none',scrollTrigger:{trigger:head,start:'top bottom',end:'bottom top',scrub:1}}));
  // Accessible capability tabs.
  const tabCopy={
   design:'Create, rename, edit and delete workflow definitions. Add steps and configure action type, locator, delay, retry, repeat count and stop-on-error.',
