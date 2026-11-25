@@ -1,5 +1,8 @@
 # SatyTracker78 Chrome extension
 
+
+> **GitHub-compatible motion:** the animated GIF diagrams in this guide are real GIF assets stored in `docs/assets/`. They play directly in GitHub's README viewer; no JavaScript, GSAP runtime, or external image service is required.
+
 Created by **Satyendra Kumar Namdeo**.
 
 ## Install / update
