@@ -119,7 +119,7 @@ async function dispatch(tabId) {
     }
     if (tab.status !== "complete") return;
     if (step.url && tab.url && step.url !== tab.url) {
-      if (!/^https?:\\/\\//i.test(step.url)) {
+      if (!/^https?:\/\//i.test(step.url)) {
         state.mode = "error";
         state.lastError = "A recorded step points to a non-web URL. Replay stopped for safety.";
         await setState(state);
@@ -128,7 +128,7 @@ async function dispatch(tabId) {
       await chrome.tabs.update(tabId, { url: step.url });
       return;
     }
-    if (tab.url && !/^https?:\\/\\//i.test(tab.url)) {
+    if (tab.url && !/^https?:\/\//i.test(tab.url)) {
       state.mode = "error";
       state.lastError = "For safety, replay is limited to regular HTTP and HTTPS pages.";
       await setState(state);
