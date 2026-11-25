@@ -8,7 +8,7 @@
 
 **A local-first workflow toolkit for authorized browser automation, with an optional Windows desktop companion and a workflow-management dashboard.**
 
-<img src="docs/assets/system-overview.svg" alt="SatyTracker78 system overview" width="100%">
+<img src="docs/assets/replay.gif" alt="SatyTracker78 system overview" width="100%">
 
 [![CI](https://github.com/SanFlash/satyenstg1/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SanFlash/satyenstg1/actions/workflows/ci.yml)
 [![Chrome Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop)
@@ -35,7 +35,7 @@ GitHub README pages do not execute embedded JavaScript, custom CSS, or GSAP time
 
 ## 01 / Product at a glance
 
-<img src="docs/assets/product-architecture.svg" alt="Architecture map separating browser extension, Windows companion and dashboard" width="100%">
+<img src="docs/assets/dashboard.gif" alt="Architecture map separating browser extension, Windows companion and dashboard" width="100%">
 
 SatyTracker78 consists of three related but distinct components:
 
@@ -51,7 +51,7 @@ SatyTracker78 consists of three related but distinct components:
 
 ## 02 / Capture — from interaction to useful context
 
-<img src="docs/assets/recording-pipeline.svg" alt="Recording pipeline showing event capture, filtering and context enrichment" width="100%">
+<img src="docs/assets/recording.gif" alt="Recording pipeline showing event capture, filtering and context enrichment" width="100%">
 
 The recorder focuses on supported DOM interactions rather than screen-video capture. It stores context that can help locate the target again:
 
@@ -66,7 +66,7 @@ Sensitive password, file-upload, payment-card and one-time-code fields are exclu
 
 ## 03 / Replay — resolve, validate, act, repeat
 
-<img src="docs/assets/replay-state-machine.svg" alt="Replay state machine showing target resolution, validation, dispatch and stop or loop" width="100%">
+<img src="docs/assets/replay.gif" alt="Replay state machine showing target resolution, validation, dispatch and stop or loop" width="100%">
 
 A replay cycle follows this sequence:
 
@@ -84,7 +84,7 @@ A replay cycle follows this sequence:
 
 ## 04 / Windows companion — permission is a lifecycle
 
-<img src="docs/assets/desktop-permission.svg" alt="Windows helper permission lifecycle from install through approval, expiry and revocation" width="100%">
+<img src="docs/assets/permission.gif" alt="Windows helper permission lifecycle from install through approval, expiry and revocation" width="100%">
 
 The optional helper is a self-contained **.NET 8 Windows x64** Native Messaging companion.
 
@@ -101,7 +101,7 @@ The companion is independently installed. Its presence does **not** mean every b
 
 ## 05 / Dashboard — manage definitions, not pretend execution
 
-<img src="docs/assets/dashboard-lifecycle.svg" alt="Dashboard lifecycle from editing and validation to local persistence and blocked queue" width="100%">
+<img src="docs/assets/dashboard.gif" alt="Dashboard lifecycle from editing and validation to local persistence and blocked queue" width="100%">
 
 The React + Vite + TypeScript dashboard currently supports:
 
@@ -119,7 +119,7 @@ The React + Vite + TypeScript dashboard currently supports:
 
 ## 06 / Privacy and security boundaries
 
-<img src="docs/assets/security-boundaries.svg" alt="Security boundary diagram showing excluded sensitive fields, permission checks and stop controls" width="100%">
+<img src="docs/assets/permission.gif" alt="Security boundary diagram showing excluded sensitive fields, permission checks and stop controls" width="100%">
 
 - Sensitive credential, payment and file-upload inputs are excluded from capture.
 - The Windows helper requires explicit local approval and expires that permission.
@@ -131,7 +131,7 @@ The React + Vite + TypeScript dashboard currently supports:
 
 ## 07 / Build and release path
 
-<img src="docs/assets/ci-release-flow.svg" alt="CI and release flow covering checks, packaging and release artifacts" width="100%">
+<img src="docs/assets/dashboard.gif" alt="CI and release flow covering checks, packaging and release artifacts" width="100%">
 
 CI and release documentation: [Deployment guide](docs/DEPLOYMENT.md). Security notes: [Security guide](docs/SECURITY.md). System design: [Architecture guide](docs/ARCHITECTURE.md).
 
