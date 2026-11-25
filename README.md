@@ -12,6 +12,8 @@
 
 **A local-first workflow toolkit for authorized browser automation, with an optional Windows desktop companion and a workflow-management dashboard.**
 
+<p align="center"><img src="docs/assets/system-overview.svg" alt="Animated three-dimensional-style SatyTracker78 product introduction and workflow overview" width="100%"></p>
+
 [![CI](https://github.com/SanFlash/satyenstg1/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SanFlash/satyenstg1/actions/workflows/ci.yml)
 [![Chrome Extension](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop)
 [![Windows](https://img.shields.io/badge/Desktop-Windows%2010%2F11%20x64-0078D4?logo=windows&logoColor=white)](https://github.com/SanFlash/satyenstg1/releases/tag/desktop-helper-latest)
