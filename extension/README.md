@@ -1,13 +1,13 @@
 # SatyTracker78 Chrome extension
 
 
-> **GitHub-compatible motion:** the animated GIF diagrams in this guide are real GIF assets stored in `docs/assets/`. They play directly in GitHub's README viewer; no JavaScript, GSAP runtime, or external image service is required.
+> **Visual documentation:** each section uses a purpose-built diagram for its subject. For animated 3D scenes and interactive controls, open the [GSAP Motion Lab](../docs/interactive-guide/index.html). GitHub README Markdown cannot run embedded GSAP or custom JavaScript.
 
 Created by **Satyendra Kumar Namdeo**.
 
 ## Install / update
 
-<p align="center"><img src="../docs/assets/recording.gif" alt="Animated extension setup flow" width="100%"></p>
+<p align="center"><img src="../docs/assets/workflow-lifecycle.svg" alt="Animated extension setup flow" width="100%"></p>
 
 1. Open `chrome://extensions` and enable Developer mode.
 2. Choose **Load unpacked** and select this repository's `extension` folder.
@@ -15,13 +15,13 @@ Created by **Satyendra Kumar Namdeo**.
 
 ## Optional Windows desktop agent
 
-<p align="center"><img src="../docs/assets/permission.gif" alt="Animated Windows helper permission flow" width="100%"></p>
+<p align="center"><img src="../docs/assets/desktop-permission.svg" alt="Animated Windows helper permission flow" width="100%"></p>
 
 Download the latest successful `satytracker78-windows-agent-source` artifact from [GitHub Actions](https://github.com/SanFlash/satyenstg1/actions), extract it, and run `build-and-install.bat`. Paste the extension ID from `chrome://extensions` when prompted, restart Chrome, reload the extension, and approve the local permission prompt when you intend to use desktop input. Run `diagnose-agent.ps1` if it does not connect. The old Python installer is deprecated; see [desktop-agent documentation](../desktop-agent/README.md).
 
 ## Use
 
-<p align="center"><img src="../docs/assets/recording.gif" alt="Animated browser workflow" width="100%"></p>
+<p align="center"><img src="../docs/assets/recording-pipeline.svg" alt="Animated browser workflow" width="100%"></p>
 
 1. Open a normal `http://` or `https://` website.
 2. Open the SatyTracker78 toolbar popup and click **Start recording**.
@@ -31,7 +31,7 @@ Download the latest successful `satytracker78-windows-agent-source` artifact fro
 
 ## Background operation and input model
 
-<p align="center"><img src="../docs/assets/replay.gif" alt="Animated browser replay state machine" width="100%"></p>
+<p align="center"><img src="../docs/assets/replay-state-machine.svg" alt="Animated browser replay state machine" width="100%"></p>
 
 All controls live in the extension popup. During replay, a small arrow cursor is animated inside the webpage with curved Bézier trajectories, distance-based acceleration, smooth frame-by-frame motion, hover transitions, a short target pause, press feedback and a click ripple. No floating control panel, Chrome debugger attachment or debugger permission is used, so Chrome's "started debugging this browser" banner is not triggered.
 
@@ -44,17 +44,17 @@ The extension records DOM actions, not a screen video. Password, file-upload, pa
 
 ## Animated browser workflow
 
-<p align="center"><img src="../docs/assets/dashboard.gif" alt="Animated browser extension architecture" width="100%"></p>
+<p align="center"><img src="../docs/assets/system-overview.svg" alt="Animated browser extension architecture" width="100%"></p>
 
 
-<p align="center"><img src="../docs/assets/recording.gif" alt="Animated recording pipeline" width="100%"></p>
+<p align="center"><img src="../docs/assets/recording-pipeline.svg" alt="Animated recording pipeline" width="100%"></p>
 
 The recorder captures supported DOM interactions and stores target context for later matching. Sensitive password, file-upload, payment-card and one-time-code fields are excluded.
 
-<p align="center"><img src="../docs/assets/replay.gif" alt="Animated replay state machine" width="100%"></p>
+<p align="center"><img src="../docs/assets/replay-state-machine.svg" alt="Animated replay state machine" width="100%"></p>
 
 Replay attempts target resolution and validation before dispatching synthetic page-level events. The in-page cursor is a visual aid; it does not move the operating-system pointer or create trusted hardware input. Protected sites, canvas interfaces, cross-origin frames and pages requiring trusted input may reject these events.
 
-<p align="center"><img src="../docs/assets/dashboard.gif" alt="Animated product architecture" width="100%"></p>
+<p align="center"><img src="../docs/assets/dashboard-lifecycle.svg" alt="Animated product architecture" width="100%"></p>
 
 For the interactive GSAP walkthrough, open the [product guide](../docs/interactive-guide/index.html). For the full visual library and project boundaries, see the [root README](../README.md).
