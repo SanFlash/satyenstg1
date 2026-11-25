@@ -24,6 +24,43 @@
 
 ---
 
+## ✨ GSAP-powered animated product experience
+
+> **Explore the interactive guide:** [Open the GSAP product walkthrough source](docs/interactive-guide/index.html)
+
+GitHub README pages do not execute embedded JavaScript, so GSAP timelines cannot run directly inside the README itself. To deliver the full moving experience without pretending GitHub supports that, this repository now includes a separate, responsive interactive guide built with **GSAP 3.15.1**, **ScrollTrigger** and **MotionPathPlugin**. The README keeps lightweight animated SVG diagrams as a compatible visual fallback.
+
+The interactive guide includes:
+
+- Cinematic hero entrance, animated gradient typography and a moving signal travelling across the product lifecycle.
+- Scroll-triggered reveals for the product sections, feature cards, workflow phases and setup lanes.
+- A playable replay simulator with a curved cursor path, target highlight, progress animation, step-state transitions and reset control.
+- Separate animated explanations for the Chrome extension, optional Windows helper and dashboard.
+- Installation cards for unpacked Chrome installation, Windows companion setup and local dashboard development.
+- Responsive layout and reduced-motion handling for users who prefer less animation.
+- Clear labels distinguishing simulated guide interactions from actual product execution.
+
+### Open the GSAP guide locally
+
+1. Open the repository on your computer.
+2. Navigate to `docs/interactive-guide/`.
+3. Open `index.html` in a modern browser with internet access so the GSAP CDN files can load.
+4. Select **Play flow** in the replay simulator, or scroll through the guide to trigger the section animations.
+
+### Host the guide
+
+The guide is a static HTML page and can be served by GitHub Pages or any static host. To publish it with GitHub Pages, configure the repository's Pages source to deploy from the `main` branch and the `/docs` folder. Once Pages is enabled, the guide will be available under:
+
+```text
+https://<your-github-username>.github.io/<repository-name>/interactive-guide/
+```
+
+The URL above is a deployment pattern, not a claim that GitHub Pages is already enabled for this repository. The existing Vercel dashboard deployment does not automatically publish the separate `docs/` guide.
+
+**Animation implementation:** GSAP core sequences the entrance and replay timeline; ScrollTrigger activates section animations as the reader scrolls; MotionPathPlugin moves the illustrative pointer along a curved route. The guide animation is presentation-only and never controls the user's browser, desktop or tracker applications.
+
+---
+
 ## Product overview
 
 SatyTracker78 is organized into three related parts:
