@@ -38,22 +38,50 @@ The dashboard currently uses the **MouseFlow AI** product label in parts of its 
 
 > **Important distinction:** the extension's browser replay and the dashboard's workflow queue are separate execution paths. The dashboard currently records a blocked queue attempt rather than executing actions. A visual connection state in the dashboard is demonstrative and is not proof that a live extension or desktop agent has paired.
 
-## Animated workflow overview
+## Animated product walkthrough
 
-The animation below illustrates the browser extension's intended user journey: record, review, replay, and stop. It is a product-flow illustration, not a live recording of the application.
+The diagrams below are designed as moving explainers: follow the animated signal to understand which component receives an action, what it does next, and where the boundaries are. They illustrate the architecture and workflow; they are not recordings of a live user session.
+
+### 1. Product architecture — three separate paths
 
 <p align="center">
-  <img src="docs/assets/workflow-lifecycle.svg" alt="Animated SatyTracker78 workflow: record browser actions, review steps, replay the flow, and stop it" width="100%">
+  <img src="docs/assets/product-architecture.svg" alt="Animated architecture showing the browser extension record and replay path, optional Windows permission path, and dashboard queue path" width="100%">
 </p>
 
-### The basic workflow
+**How to read the flow**
 
-1. Open a website you are authorized to use.
-2. Start recording from the SatyTracker78 extension popup.
-3. Perform the browser actions you want to capture.
-4. Finish recording and review the step count.
-5. Configure action timing and the delay between complete loops.
-6. Start replay and stop it from the popup whenever required.
+- **Lane A — Browser workflow:** user interactions are captured by the extension recorder, converted into contextual steps, resolved again during replay, and dispatched as synthetic page-level events to the active website. The loop continues until the user stops it.
+- **Lane B — Windows companion:** the user installs a local Native Messaging host, Chrome communicates with it, and a Windows permission dialog gates desktop input. Approval is time-limited. This is a separate optional component, not a claim that every browser replay action is sent through the operating-system input layer.
+- **Lane C — Dashboard:** workflow definitions are created and edited in the React UI, validated and saved in browser local storage. A queue attempt is recorded as blocked until a real authenticated execution adapter exists.
+
+### 2. What a replay cycle looks like
+
+<p align="center">
+  <img src="docs/assets/replay-walkthrough.svg" alt="Animated replay walkthrough showing a target being highlighted, a moving pointer, replay progress and stop guidance" width="100%">
+</p>
+
+**Replay sequence explained**
+
+1. **Resolve:** the content script attempts the recorded selector and checks the element against its saved text, role, label and surrounding context.
+2. **Wait when needed:** replay can wait for a target to appear rather than immediately failing on a page that is still rendering.
+3. **Move:** the in-page pointer animates toward the resolved target using eased movement.
+4. **Act:** the extension dispatches the supported synthetic page interaction.
+5. **Pause:** the configured action delay gives the page time to respond.
+6. **Repeat:** after the final step, the configured loop delay is applied before the next cycle.
+7. **Stop:** the user can stop replay from the extension popup. If stop-on-error is enabled, an unreplayable action ends the sequence.
+
+### 3. The basic user journey
+
+| Stage | User does | Product response |
+|---|---|---|
+| Prepare | Opens an authorized website | Extension popup is ready |
+| Record | Starts recording and performs a task | Supported DOM actions and target context are captured |
+| Review | Finishes recording and checks the step count | Recorded sequence is available for replay |
+| Configure | Sets action delay, loop delay and stop-on-error | Replay behavior is configured |
+| Replay | Starts repeating the flow | Steps are resolved and dispatched in order |
+| Control | Stops replay when finished or when something looks wrong | The loop stops |
+
+> **Important:** the animated diagrams explain the product's current architecture. The dashboard lane is deliberately shown as a blocked queue path, not as a working execution engine. The Windows companion is optional and has its own permission gate.
 
 ---
 
@@ -275,6 +303,49 @@ A successful selector match is not a guarantee that the resulting action is appr
 
 ---
 
+## 🔬 Browser recorder and replay — detailed behavior
+
+This section describes what is actually captured and how the extension tries to find the same target later.
+
+### What can be captured
+
+| Interaction | Recording behavior |
+|---|---|
+| Click | Captures supported buttons, links, menu items, tabs, options and related interactive roles |
+| Text entry | Captures supported text/search/email/url/tel/number inputs, textareas and editable content after a short settle period |
+| Select / checkbox / radio | Captures supported value or checked-state changes |
+| Scroll | Captures a settled document scroll position rather than every scroll frame |
+| Page navigation | Step context includes the page URL so replay can reason about the recorded location |
+
+The recorder stores useful target context such as selector, tag, role, visible text, label, accessible label, title, name, placeholder, test ID, nearby parent text, grandparent text and normalized position. Input values are bounded in length. Sensitive field types are intentionally excluded.
+
+### How target resolution works
+
+The content script uses a best-effort strategy rather than trusting one brittle selector:
+
+1. Try the recorded selector.
+2. Check that the candidate is visible, connected to the page and not marked private.
+3. Score candidate elements using role, text, label, attributes, link destination and nearby context.
+4. Prefer a sufficiently strong or unambiguous match.
+5. If necessary, use the recorded normalized position to find a safe interactive element under that point.
+6. If no suitable target appears within the wait window, report a target-not-found error.
+
+This approach improves resilience to modest page changes, but it cannot guarantee success after major redesigns, dynamic content changes or ambiguous duplicate controls.
+
+### Replay motion and event model
+
+The page-only cursor is an explanatory visual aid. Its movement is animated within the webpage and can include eased travel, hover transitions and click feedback. The cursor does not represent the physical Windows pointer. Clicks are synthetic page events, not trusted hardware events. Websites that require trusted input may reject them.
+
+### Timing controls
+
+- **Flow speed:** delay between replay actions.
+- **Delay between loops:** pause after one full sequence and before the next cycle.
+- **Stop on error:** stops the sequence when a step cannot be replayed, rather than continuing blindly.
+
+Start with a short flow and a conservative delay. A page's response time can vary by network, rendering, authentication state and application behavior.
+
+---
+
 ## 🧭 How it works
 
 ### Component architecture
@@ -346,6 +417,39 @@ The tree above highlights the main product areas; individual test and support fi
 - Native Messaging connects Chrome to a separately installed local Windows process.
 - The desktop helper has its own local permission boundary and emergency stop behavior.
 - The dashboard's queue records are not the same as successful browser or desktop executions.
+
+---
+
+## 🧩 Dashboard — workflow management details
+
+The React dashboard is useful for designing and organizing structured workflow definitions. It is not currently wired to the Chrome recorder's execution engine.
+
+### Workflow definition model
+
+A workflow includes:
+- Name and environment label (`browser` or `desktop`).
+- Repeat count (bounded to 1–100).
+- Delay between runs (bounded to 0–60,000 ms).
+- Stop-on-error behavior.
+- One or more ordered steps.
+
+Each step includes a name, supported action, locator strategy and value, timeout (100–60,000 ms), and retry count (0–5). Supported action labels are click, double-click, hover, scroll, wait and verify. Supported locator strategies are CSS, XPath, ID, text, role and test ID.
+
+### Import validation
+
+Workflow JSON import is schema-checked before it is added to the library. The current UI limits import files to 1 MB; validation checks workflow name, environment, repeat count, delay, stop-on-error, step count, action names, locator strategy/value, role requirements, timeout and retry bounds. Invalid JSON or out-of-range values are rejected.
+
+### Local persistence and export
+
+- Workflow definitions are saved in browser `localStorage`.
+- Run history is saved in browser `localStorage`.
+- Workflow definitions can be exported as JSON.
+- Run history can be exported as JSON.
+- Storage is local to that browser profile; it does not synchronize automatically across devices or browsers.
+
+### Why a queued dashboard run is blocked
+
+The dashboard currently creates a history record with a `blocked` status and a message that no authenticated local execution adapter is connected. It does not invoke the extension replay engine or the Windows companion. Connection toggles are demonstrative UI state only. This boundary is intentional and is shown as such in the product architecture animation.
 
 ---
 
