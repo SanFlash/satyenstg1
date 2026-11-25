@@ -69,7 +69,7 @@ function connectNativeHelper() {
   });
 }
 const NEXT_STEP_ALARM = "satytracker78-next-step";
-const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stepDelayMs: 900, stopOnError: true, tabId: null, lastError: "", inFlight: false, inFlightUrl: "", inFlightNavigationStarted: false };
+const initial = { mode: "idle", steps: [], stepIndex: 0, iterations: 0, delayMs: 1000, stepDelayMs: 900, stopOnError: true, tabId: null, startUrl: "", lastError: "", inFlight: false, inFlightUrl: "", inFlightNavigationStarted: false, resettingLoop: false };
 
 async function getState() {
   const data = await chrome.storage.local.get(KEY);
@@ -118,6 +118,16 @@ async function dispatch(tabId) {
       return;
     }
     if (tab.status !== "complete") return;
+    if (step.url && tab.url && step.url !== tab.url) {
+      if (!/^https?:\\/\\//i.test(step.url)) {
+        state.mode = "error";
+        state.lastError = "A recorded step points to a non-web URL. Replay stopped for safety.";
+        await setState(state);
+        return;
+      }
+      await chrome.tabs.update(tabId, { url: step.url });
+      return;
+    }
     if (tab.url && !/^https?:\\/\\//i.test(tab.url)) {
       state.mode = "error";
       state.lastError = "For safety, replay is limited to regular HTTP and HTTPS pages.";
@@ -156,12 +166,30 @@ async function replayResult(message, sender) {
     return;
   }
   state.stepIndex += 1;
+  let completedIteration = false;
   if (state.stepIndex >= state.steps.length) {
     state.stepIndex = 0;
     state.iterations += 1;
+    completedIteration = true;
   }
   await setState(state);
-  const wait = state.stepIndex === 0 ? state.delayMs : state.stepDelayMs;
+  if (completedIteration && state.startUrl) {
+    try {
+      const tab = await chrome.tabs.get(state.tabId);
+      state.resettingLoop = true;
+      await setState(state);
+      if (tab.url === state.startUrl) await chrome.tabs.reload(state.tabId);
+      else await chrome.tabs.update(state.tabId, { url: state.startUrl });
+      return;
+    } catch (error) {
+      state.mode = "error";
+      state.resettingLoop = false;
+      state.lastError = "Could not return to the recorded starting page: " + (error.message || String(error));
+      await setState(state);
+      return;
+    }
+  }
+  const wait = completedIteration ? state.delayMs : state.stepDelayMs;
   scheduleNextStep(wait);
 }
 
@@ -208,7 +236,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const tabId = message.tabId ?? senderTabId;
         if (tabId == null) { sendResponse({ ok: false, error: "Open a normal website tab first." }); return; }
         await chrome.alarms.clear(NEXT_STEP_ALARM);
-        state = { ...initial, mode: "recording", tabId, steps: [] };
+        let startTab;
+        try { startTab = await chrome.tabs.get(tabId); } catch {}
+        state = { ...initial, mode: "recording", tabId, startUrl: startTab?.url || "", steps: [] };
         await setState(state);
         const ok = await inject(tabId);
         sendResponse({ ok, error: ok ? "" : (await getState()).lastError });
@@ -233,10 +263,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         const tabId = message.tabId ?? senderTabId ?? state.tabId;
         if (!state.steps.length) { sendResponse({ ok: false, error: "Record at least one action before starting the repeat loop." }); return; }
         if (tabId == null) { sendResponse({ ok: false, error: "Open the page containing the recorded task." }); return; }
-        state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, inFlightNavigationStarted: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stepDelayMs: Math.max(0, Math.min(3000, Number(message.stepDelayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
+        state = { ...state, mode: "replaying", tabId, stepIndex: 0, iterations: 0, inFlight: false, inFlightNavigationStarted: false, resettingLoop: false, delayMs: Math.max(0, Math.min(30000, Number(message.delayMs) || 0)), stepDelayMs: Math.max(0, Math.min(3000, Number(message.stepDelayMs) || 0)), stopOnError: message.stopOnError !== false, lastError: "" };
         await chrome.alarms.clear(NEXT_STEP_ALARM);
-        await setState(state);
-        await dispatch(tabId);
+        let active;
+        try { active = await chrome.tabs.get(tabId); } catch {}
+        if (state.startUrl && active?.url && active.url !== state.startUrl) {
+          state.resettingLoop = true;
+          await setState(state);
+          await chrome.tabs.update(tabId, { url: state.startUrl });
+        } else {
+          await setState(state);
+          await dispatch(tabId);
+        }
         sendResponse({ ok: true });
         return;
       }
@@ -276,6 +314,15 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;
   if (state.mode === "recording" || state.mode === "replaying" || state.mode === "idle") await inject(tabId);
   state = await getState();
+  if (state.mode === "replaying" && state.resettingLoop) {
+    state.resettingLoop = false;
+    state.inFlight = false;
+    state.inFlightUrl = "";
+    state.inFlightNavigationStarted = false;
+    await setState(state);
+    scheduleNextStep(state.delayMs);
+    return;
+  }
   if (state.mode === "replaying" && state.inFlight &&
       (state.inFlightNavigationStarted || (state.inFlightUrl && tab?.url && tab.url !== state.inFlightUrl))) {
     state.inFlight = false;
