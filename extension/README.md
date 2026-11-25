@@ -7,7 +7,7 @@ Created by **Satyendra Kumar Namdeo**.
 2. Choose **Load unpacked** and select this repository's `extension` folder.
 3. Click **Reload** on SatyTracker78 and refresh the target website.
 
-## Optional Windows desktop agent\nDownload the latest successful `satytracker78-windows-agent` artifact from [GitHub Actions](https://github.com/SanFlash/satyenstg1/actions), extract it, and run `install-agent.bat`. Paste the extension ID from `chrome://extensions`, restart Chrome, reload the extension, and approve the local permission prompt when you intend to use desktop input. The old Python installer is deprecated; see [desktop-agent documentation](../desktop-agent/README.md).\n\n## Use
+## Optional Windows desktop agent\nDownload the latest successful `satytracker78-windows-agent-source` artifact from [GitHub Actions](https://github.com/SanFlash/satyenstg1/actions), extract it, and run `build-and-install.bat`. Paste the extension ID from `chrome://extensions` when prompted, restart Chrome, reload the extension, and approve the local permission prompt when you intend to use desktop input. Run `diagnose-agent.ps1` if it does not connect. The old Python installer is deprecated; see [desktop-agent documentation](../desktop-agent/README.md).\n\n## Use
 1. Open a normal `http://` or `https://` website.
 2. Open the SatyTracker78 toolbar popup and click **Start recording**.
 3. Perform the task, reopen the popup and click **Finish recording**.
