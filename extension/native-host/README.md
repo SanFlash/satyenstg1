@@ -6,7 +6,7 @@ The supported Windows desktop helper is now the standalone .NET agent in [deskto
 
 ## Install the standalone agent
 
-<p align="center"><img src="../../docs/assets/desktop-permission.svg" alt="Animated Native Messaging setup flow" width="100%"></p>
+<p align="center"><img src="../../docs/assets/permission.gif" alt="Animated Native Messaging setup flow" width="100%"></p>
 
 1. Open [GitHub Actions](https://github.com/SanFlash/satyenstg1/actions).
 2. Open the latest successful **CI** run on `main`.
@@ -22,9 +22,9 @@ The Windows agent is currently the first replacement milestone. Browser DOM reco
 
 ## Animated Native Messaging and permission flow
 
-<p align="center"><img src="../../docs/assets/desktop-permission.svg" alt="Animated desktop permission lifecycle" width="100%"></p>
+<p align="center"><img src="../../docs/assets/permission.gif" alt="Animated desktop permission lifecycle" width="100%"></p>
 
-<p align="center"><img src="../../docs/assets/security-boundaries.svg" alt="Animated security boundaries" width="100%"></p>
+<p align="center"><img src="../../docs/assets/permission.gif" alt="Animated security boundaries" width="100%"></p>
 
 The visual sequence documents the separate Native Messaging connection and explicit local permission boundary. It does not imply that browser DOM replay is routed through trusted operating-system input. The legacy Python host in this folder is deprecated; use the standalone .NET helper described in [desktop-agent](../../desktop-agent/README.md).
 
