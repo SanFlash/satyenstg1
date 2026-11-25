@@ -21,7 +21,7 @@ Download the latest successful `satytracker78-windows-agent-source` artifact fro
 
 ## Use
 
-<p align="center"><img src="../docs/assets/recording-pipeline.svg" alt="Animated browser workflow" width="100%"></p>
+<p align="center"><img src="../docs/assets/security-boundaries.svg" alt="Animated browser workflow" width="100%"></p>
 
 1. Open a normal `http://` or `https://` website.
 2. Open the SatyTracker78 toolbar popup and click **Start recording**.
@@ -31,7 +31,7 @@ Download the latest successful `satytracker78-windows-agent-source` artifact fro
 
 ## Background operation and input model
 
-<p align="center"><img src="../docs/assets/replay-state-machine.svg" alt="Animated browser replay state machine" width="100%"></p>
+<p align="center"><img src="../docs/assets/ci-release-flow.svg" alt="Animated browser replay state machine" width="100%"></p>
 
 All controls live in the extension popup. During replay, a small arrow cursor is animated inside the webpage with curved Bézier trajectories, distance-based acceleration, smooth frame-by-frame motion, hover transitions, a short target pause, press feedback and a click ripple. No floating control panel, Chrome debugger attachment or debugger permission is used, so Chrome's "started debugging this browser" banner is not triggered.
 
