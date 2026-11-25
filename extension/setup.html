@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1020">
+  <title>Desktop Helper Setup · SatyTracker78</title>
+  <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="popup.html" aria-label="Back to SatyTracker78">
+        <img src="icon48.png" alt="">
+        <span><strong>SatyTracker78</strong><small>Created by Satyendra Kumar Namdeo</small></span>
+      </a>
+      <span class="version">DESKTOP COMPANION</span>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="kicker">ONE-TIME SETUP · WINDOWS 10 / 11</span>
+        <h1>Bring desktop actions into your workflow.</h1>
+        <p>Install the optional Windows companion to let SatyTracker78 perform visible, user-approved mouse and keyboard actions beyond the browser tab.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="https://github.com/SanFlash/satyenstg1/releases/download/desktop-helper-latest/SatyTracker78-Windows-Setup.zip" target="_blank" rel="noopener noreferrer">Download Windows setup <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="https://github.com/SanFlash/satyenstg1/releases/tag/desktop-helper-latest" target="_blank" rel="noopener noreferrer">View release details</a>
+        </div>
+        <div class="trust-row"><span>✓ No .NET or Python install</span><span>✓ Per-user setup</span><span>✓ Uninstall included</span></div>
+      </div>
+      <aside class="hero-panel">
+        <div class="panel-icon">↗</div>
+        <strong>Optional companion</strong>
+        <p>Your browser recorder and replay controls work independently. Install this only when you need desktop-level actions.</p>
+        <div class="mini-status"><i></i> Permission stays off until you approve it</div>
+      </aside>
+    </section>
+
+    <section class="setup-layout">
+      <div class="main-column">
+        <div class="section-heading"><span class="step-label">01 — INSTALL</span><h2>Get set up in a few minutes</h2><p>Follow these steps in order. Chrome requires a restart after native host registration.</p></div>
+        <article class="step-card">
+          <div class="step-number">1</div><div class="step-content"><h3>Download and extract</h3><p>Download the ZIP above and extract the complete folder. Do not run the installer from inside the ZIP preview.</p><span class="file-chip">SatyTracker78-Windows-Setup.zip</span></div>
+        </article>
+        <article class="step-card">
+          <div class="step-number">2</div><div class="step-content"><h3>Run the guided installer</h3><p>Open the extracted folder and double-click <b>Setup-SatyTracker78.cmd</b>. Windows may ask you to confirm that you want to run a downloaded file.</p><span class="file-chip">Setup-SatyTracker78.cmd</span></div>
+        </article>
+        <article class="step-card">
+          <div class="step-number">3</div><div class="step-content"><h3>Register this extension</h3><p>Copy the extension ID below and paste it into the installer when prompted. This limits the native helper to this exact extension.</p><div class="id-box"><code id="extensionId">Loading extension ID…</code><button id="copyId" class="copy-button" type="button">Copy ID</button></div><small id="copyStatus" class="inline-status" aria-live="polite"></small></div>
+        </article>
+        <article class="step-card">
+          <div class="step-number">4</div><div class="step-content"><h3>Restart Chrome and connect</h3><p>Fully exit Chrome and reopen it. Open the SatyTracker78 popup, then choose <b>Connect &amp; enable desktop helper</b>. Approve the Windows permission dialog only when you are ready to allow desktop input.</p></div>
+        </article>
+        <div class="success-note"><span class="success-mark">✓</span><div><b>Setup complete?</b><p>Return to the extension popup. The helper status should show Connected after you approve the local permission prompt.</p><a href="popup.html">Back to SatyTracker78 ↗</a></div></div>
+      </div>
+
+      <aside class="side-column">
+        <section class="side-card">
+          <span class="step-label">02 — REQUIREMENTS</span><h2>Before you begin</h2>
+          <ul class="check-list"><li>Windows 10 or Windows 11, 64-bit</li><li>Google Chrome with SatyTracker78 installed</li><li>Permission to run an app for your Windows user account</li><li>Internet access to download the setup package</li></ul>
+          <p class="muted">No separate .NET SDK, Python, pip, or administrator access is intended to be required.</p>
+        </section>
+        <section class="side-card security-card">
+          <span class="step-label">03 — CONTROL &amp; PRIVACY</span><h2>You stay in control.</h2>
+          <ul class="security-list"><li>Desktop access starts disabled.</li><li>A Windows permission dialog asks before control is enabled.</li><li>Permission expires after five minutes.</li><li>Stop or closing Chrome revokes permission.</li><li>No screenshots, clipboard capture, hidden keystroke logging, or idle spoofing.</li></ul>
+        </section>
+        <section class="side-card help-card">
+          <span class="step-label">04 — NEED HELP?</span><h2>Connection not working?</h2>
+          <p>Check that the extension ID entered during setup matches the ID above. Restart every Chrome window and reconnect.</p>
+          <a class="outline-button" href="https://github.com/SanFlash/satyenstg1/issues" target="_blank" rel="noopener noreferrer">Report a setup issue ↗</a>
+          <a class="subtle-link" href="https://github.com/SanFlash/satyenstg1/tree/main/desktop-agent" target="_blank" rel="noopener noreferrer">Read troubleshooting guide</a>
+        </section>
+      </aside>
+    </section>
+
+    <footer><span>SatyTracker78 · Created by Satyendra Kumar Namdeo</span><span>Desktop Helper is optional and does not replace browser recording.</span></footer>
+  </main>
+  <script src="setup.js"></script>
+</body>
+</html>
