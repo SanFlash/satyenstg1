@@ -1,5 +1,8 @@
 # SatyTracker78 Desktop Helper
 
+
+> **GitHub-compatible motion:** the animated GIF diagrams in this guide are real GIF assets stored in `docs/assets/`. They play directly in GitHub's README viewer; no JavaScript, GSAP runtime, or external image service is required.
+
 Created by **Satyendra Kumar Namdeo**.
 
 The supported Windows desktop helper is now the standalone .NET agent in [desktop-agent](../../desktop-agent/README.md). The older Python/pynput installer in this directory is deprecated and should not be used for new installations.
@@ -15,7 +18,8 @@ The supported Windows desktop helper is now the standalone .NET agent in [deskto
 5. Fully exit Chrome, reopen it, reload SatyTracker78, and connect the desktop helper.
 6. Approve the local permission prompt only when you intend to run authorized actions.
 
-Logs: `%LOCALAPPDATA%\SatyTracker78\native-host.log`.
+Logs: `%LOCALAPPDATA%\SatyTracker78
+ative-host.log`.
 
 The Windows agent is currently the first replacement milestone. Browser DOM recording/replay remains separate from OS-level input. Tracker-specific API connectors are being developed as separately permissioned, read-only integrations; they do not alter, suppress, or simulate the trackers' own monitoring.
 
