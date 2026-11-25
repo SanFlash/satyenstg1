@@ -22,3 +22,18 @@ New recordings save visible text, accessible role, labels, attributes, nearby te
 Clicks use synthetic page-level pointer and mouse events coordinated with the animated page cursor. These avoid the debugger banner but are **not trusted hardware input** and do not move the operating-system cursor. Some websites may reject synthetic events or require trusted physical input; a native desktop helper would be needed for that. Protected pages, canvas interfaces and cross-origin frames need specialized support.
 
 The extension records DOM actions, not a screen video. Password, file-upload, payment-card and one-time-code fields are excluded. Use only on sites you are authorized to operate. Do not automate purchases, bulk messaging, destructive actions, CAPTCHA or access-control bypasses.
+
+
+## Animated browser workflow
+
+<p align="center"><img src="../docs/assets/recording-pipeline.svg" alt="Animated recording pipeline" width="100%"></p>
+
+The recorder captures supported DOM interactions and stores target context for later matching. Sensitive password, file-upload, payment-card and one-time-code fields are excluded.
+
+<p align="center"><img src="../docs/assets/replay-state-machine.svg" alt="Animated replay state machine" width="100%"></p>
+
+Replay attempts target resolution and validation before dispatching synthetic page-level events. The in-page cursor is a visual aid; it does not move the operating-system pointer or create trusted hardware input. Protected sites, canvas interfaces, cross-origin frames and pages requiring trusted input may reject these events.
+
+<p align="center"><img src="../docs/assets/product-architecture.svg" alt="Animated product architecture" width="100%"></p>
+
+For the interactive GSAP walkthrough, open the [product guide](../docs/interactive-guide/index.html). For the full visual library and project boundaries, see the [root README](../README.md).
