@@ -1,8 +1,14 @@
 # Tracker integration compatibility
 
+<p align="center"><img src="assets/security-boundaries.svg" alt="Animated authorized integration boundary" width="100%"></p>
+
+
 SatyTracker78 treats tracker products as independent, explicitly authorized data providers. It does not impersonate their desktop clients, change their timers, manipulate idle/activity signals, interfere with screenshots, or bypass employer policies. API credentials belong in the local Windows credential store/DPAPI-backed vault, never in the browser extension or a committed file.
 
 ## Provider capability and prerequisites
+
+<p align="center"><img src="assets/system-overview.svg" alt="Animated connector architecture" width="100%"></p>
+
 
 | Provider | Official integration surface | Account / approval notes | SatyTracker78 status |
 |---|---|---|---|
@@ -16,6 +22,9 @@ SatyTracker78 treats tracker products as independent, explicitly authorized data
 
 ## Planned connector contract
 
+<p align="center"><img src="assets/workflow-lifecycle.svg" alt="Animated connector lifecycle" width="100%"></p>
+
+
 Each provider adapter will implement:
 - `connect()`: provider-supported OAuth or API-key flow; no password scraping.
 - `healthCheck()`: validate the credential and granted scopes.
@@ -26,6 +35,9 @@ Each provider adapter will implement:
 Write operations, timer control, and employee-monitoring configuration are out of scope for the initial release. Provider endpoints, payloads, pagination, rate limits, and scopes must be implemented against the provider's current official API specification, not guessed.
 
 ## Delivery phases
+
+<p align="center"><img src="assets/ci-release-flow.svg" alt="Animated delivery and verification flow" width="100%"></p>
+
 
 1. Standalone Windows Native Messaging agent and secure local installation.
 2. DPAPI-backed credential vault and provider adapter interface.
