@@ -122,6 +122,37 @@ The diagrams below are designed as moving explainers: follow the animated signal
 
 ---
 
+## 🎞️ Expanded animated visual library
+
+The repository now includes **10 animated SVG explainers** plus the interactive GSAP guide. SVG animations use lightweight native SVG motion so they also render directly in GitHub Markdown; the HTML guide adds richer GSAP timelines and interactive demonstrations.
+
+| Animated file | What it explains |
+|---|---|
+| [Product architecture](docs/assets/product-architecture.svg) | Browser, Windows helper and dashboard boundaries |
+| [Replay walkthrough](docs/assets/replay-walkthrough.svg) | Target matching, pointer movement and replay progress |
+| [Workflow lifecycle](docs/assets/workflow-lifecycle.svg) | From workflow definition through validation and queue state |
+| [System overview](docs/assets/system-overview.svg) | High-level product components and data movement |
+| [Recording pipeline](docs/assets/recording-pipeline.svg) | Captured DOM event to contextual workflow step |
+| [Replay state machine](docs/assets/replay-state-machine.svg) | Resolve, validate, dispatch, wait and stop/loop states |
+| [Desktop permission lifecycle](docs/assets/desktop-permission.svg) | Local approval, time-limited permission and revocation |
+| [Dashboard lifecycle](docs/assets/dashboard-lifecycle.svg) | Editing, validation, local persistence and blocked queue |
+| [Security boundaries](docs/assets/security-boundaries.svg) | Input filtering, permission gates and stop controls |
+| [CI and release flow](docs/assets/ci-release-flow.svg) | Checks, Windows packaging, protocol test and release |
+
+### Animated flow gallery
+
+<p align="center"><img src="docs/assets/system-overview.svg" alt="Animated system overview" width="100%"></p>
+<p align="center"><img src="docs/assets/recording-pipeline.svg" alt="Animated recording pipeline" width="100%"></p>
+<p align="center"><img src="docs/assets/replay-state-machine.svg" alt="Animated replay state machine" width="100%"></p>
+<p align="center"><img src="docs/assets/desktop-permission.svg" alt="Animated desktop permission lifecycle" width="100%"></p>
+<p align="center"><img src="docs/assets/dashboard-lifecycle.svg" alt="Animated dashboard workflow lifecycle" width="100%"></p>
+<p align="center"><img src="docs/assets/security-boundaries.svg" alt="Animated security boundaries" width="100%"></p>
+<p align="center"><img src="docs/assets/ci-release-flow.svg" alt="Animated CI and release flow" width="100%"></p>
+
+> GitHub renders the SVG files as images; it does not execute arbitrary JavaScript in README content. For the complete scroll-triggered and interactive GSAP experience, open the [GSAP interactive guide](docs/interactive-guide/index.html). All diagrams are explanatory, not telemetry from a live execution.
+
+---
+
 ## ✨ What the product includes
 
 ### 1. Chrome extension — Record & Repeat
