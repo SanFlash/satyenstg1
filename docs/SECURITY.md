@@ -1,5 +1,8 @@
 # Security model
 
+<p align="center"><img src="assets/security-boundaries.svg" alt="Animated security model and permission boundaries" width="100%"></p>
+
+
 1. Explicit user initiation for each run.
 2. Domain allowlist for browser execution.
 3. Validate schemas, action types, counts, delays and locators on execution host.
