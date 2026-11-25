@@ -9,6 +9,7 @@ echo ==========================================
 
 set "SDK_DIR=%LOCALAPPDATA%\SatyTracker78\dotnet-sdk"
 set "DOTNET_ROOT=%SDK_DIR%"
+set "DOTNET_EXE=%SDK_DIR%\dotnet.exe"
 set "PATH=%SDK_DIR%;%PATH%"
 
 if exist "%SDK_DIR%\dotnet.exe" (
@@ -20,6 +21,8 @@ where dotnet >nul 2>&1
 if not errorlevel 1 (
   for /f "tokens=*" %%V in ('dotnet --list-sdks 2^>nul ^| findstr /b "8."') do (
     echo Found installed .NET 8 SDK: %%V
+    set "DOTNET_EXE=dotnet"
+    set "DOTNET_ROOT="
     goto BUILD_AGENT
   )
 )
@@ -40,13 +43,13 @@ set "PATH=%SDK_DIR%;%PATH%"
 :BUILD_AGENT
 echo.
 echo Checking .NET SDK...
-"%DOTNET_ROOT%\dotnet.exe" --list-sdks
+"%DOTNET_EXE%" --list-sdks
 if errorlevel 1 (
   echo .NET SDK validation failed.
   pause
   exit /b 1
 )
-"%DOTNET_ROOT%\dotnet.exe" publish "%~dp0SatyTracker78.Agent.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o "%~dp0build"
+"%DOTNET_EXE%" publish "%~dp0SatyTracker78.Agent.csproj" -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o "%~dp0build"
 if errorlevel 1 (
   echo.
   echo Build failed. Review the compiler output above.
