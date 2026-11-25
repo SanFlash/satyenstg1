@@ -12,7 +12,8 @@ Windows x64 Native Messaging host built from transparent .NET 8 source. The publ
 2. Inspect `Program.cs` and `SatyTracker78.Agent.csproj` if desired.
 3. Double-click `build-and-install.bat`. It bootstraps the official .NET 8 SDK into your user profile if needed, compiles the source locally, then starts `install-agent.bat`.
 4. Paste the current extension ID from `chrome://extensions`.
-5. Fully exit Chrome, reopen it, reload SatyTracker78, and choose Connect & enable desktop helper.
+5. Run `diagnose-agent.ps1` if installation does not complete or the helper does not connect. It checks the Chrome registry entry, manifest, executable, SDK and log without changing settings.
+6. Fully exit Chrome, reopen it, reload SatyTracker78, and choose Connect & enable desktop helper.
 6. Approve the local permission prompt only when you intend to use desktop input.
 
 The installer stores the executable under `%LOCALAPPDATA%\SatyTracker78` and registers the Chrome Native Messaging manifest for the exact extension ID. No Python, pip, or pynput is required.
