@@ -8,7 +8,8 @@
     "scripting",
     "storage",
     "tabs",
-    "nativeMessaging"
+    "nativeMessaging",
+    "alarms"
   ],
   "host_permissions": [
     "http://*/*",
