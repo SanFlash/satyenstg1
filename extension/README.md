@@ -13,7 +13,10 @@ Created by **Satyendra Kumar Namdeo**.
 ## Optional Windows desktop agent
 
 <p align="center"><img src="../docs/assets/desktop-permission.svg" alt="Animated Windows helper permission flow" width="100%"></p>
-\nDownload the latest successful `satytracker78-windows-agent-source` artifact from [GitHub Actions](https://github.com/SanFlash/satyenstg1/actions), extract it, and run `build-and-install.bat`. Paste the extension ID from `chrome://extensions` when prompted, restart Chrome, reload the extension, and approve the local permission prompt when you intend to use desktop input. Run `diagnose-agent.ps1` if it does not connect. The old Python installer is deprecated; see [desktop-agent documentation](../desktop-agent/README.md).\n\n## Use
+
+Download the latest successful `satytracker78-windows-agent-source` artifact from [GitHub Actions](https://github.com/SanFlash/satyenstg1/actions), extract it, and run `build-and-install.bat`. Paste the extension ID from `chrome://extensions` when prompted, restart Chrome, reload the extension, and approve the local permission prompt when you intend to use desktop input. Run `diagnose-agent.ps1` if it does not connect. The old Python installer is deprecated; see [desktop-agent documentation](../desktop-agent/README.md).
+
+## Use
 
 <p align="center"><img src="../docs/assets/recording-pipeline.svg" alt="Animated browser workflow" width="100%"></p>
 
