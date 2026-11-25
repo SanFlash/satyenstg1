@@ -3,6 +3,7 @@ name: CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
 jobs:
   build-and-test:
@@ -33,6 +34,8 @@ jobs:
 
   windows-desktop-agent:
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup .NET 8
@@ -43,22 +46,28 @@ jobs:
         run: dotnet publish desktop-agent/SatyTracker78.Agent.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o desktop-agent/publish
       - name: Smoke-test compiled Native Messaging agent
         run: python desktop-agent/test_protocol.py desktop-agent/publish/SatyTracker78.Agent.exe
-      - name: Assemble source-based installer package (no executable)
+      - name: Assemble end-user Windows setup package
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force desktop-agent/distribution | Out-Null
-          Copy-Item desktop-agent/SatyTracker78.Agent.csproj desktop-agent/distribution/
-          Copy-Item desktop-agent/Program.cs desktop-agent/distribution/
-          Copy-Item desktop-agent/build-and-install.bat desktop-agent/distribution/
-          Copy-Item desktop-agent/setup-dotnet-sdk.ps1 desktop-agent/distribution/
-          Copy-Item desktop-agent/diagnose-agent.ps1 desktop-agent/distribution/
-          Copy-Item desktop-agent/install-agent.bat desktop-agent/distribution/
-          Copy-Item desktop-agent/uninstall-agent.bat desktop-agent/distribution/
-          Copy-Item desktop-agent/README.md desktop-agent/distribution/
-      - name: Upload source-based Windows package
+          $dist = 'desktop-agent/distribution'
+          New-Item -ItemType Directory -Force $dist | Out-Null
+          Copy-Item desktop-agent/publish/SatyTracker78.Agent.exe $dist/
+          Copy-Item desktop-agent/Setup-SatyTracker78.cmd $dist/
+          Copy-Item desktop-agent/Install-SatyTracker78.ps1 $dist/
+          Copy-Item desktop-agent/Uninstall-SatyTracker78.cmd $dist/
+          Copy-Item desktop-agent/Uninstall-SatyTracker78.ps1 $dist/
+          Copy-Item desktop-agent/README.md $dist/
+          Compress-Archive -Path "$dist/*" -DestinationPath desktop-agent/SatyTracker78-Windows-Setup.zip -Force
+      - name: Upload end-user Windows setup
         uses: actions/upload-artifact@v4
         with:
-          name: satytracker78-windows-agent-source
-          path: desktop-agent/distribution/
+          name: SatyTracker78-Windows-Setup
+          path: desktop-agent/SatyTracker78-Windows-Setup.zip
           if-no-files-found: error
           retention-days: 30
+      - name: Publish downloadable Windows setup on tagged releases
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: desktop-agent/SatyTracker78-Windows-Setup.zip
+          generate_release_notes: true
