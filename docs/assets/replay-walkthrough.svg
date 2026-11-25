@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="500" viewBox="0 0 1440 500" role="img" aria-labelledby="t d">
+<title id="t">Animated SatyTracker78 browser replay sequence</title><desc id="d">A simulated browser window shows a recorded sequence being replayed, with a moving pointer, highlighted target, progress track, loop counter, and stop control.</desc>
+<defs><linearGradient id="b" x2="1" y2="1"><stop stop-color="#091525"/><stop offset="1" stop-color="#1c3152"/></linearGradient><filter id="g"><feGaussianBlur stdDeviation="4" result="x"/><feMerge><feMergeNode in="x"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+<rect width="1440" height="500" rx="28" fill="url(#b)"/>
+<text x="54" y="58" fill="#f8fafc" font-family="Arial,sans-serif" font-size="28" font-weight="700">INSIDE A REPLAY CYCLE</text>
+<text x="54" y="87" fill="#a9bbd7" font-family="Arial,sans-serif" font-size="16">Illustrative interface — shows the concept of resolving a saved target and replaying an action.</text>
+<rect x="54" y="118" width="900" height="326" rx="18" fill="#f8fafc"/>
+<rect x="54" y="118" width="900" height="42" rx="18" fill="#dbe4ef"/><circle cx="80" cy="139" r="6" fill="#fb7185"/><circle cx="101" cy="139" r="6" fill="#fbbf24"/><circle cx="122" cy="139" r="6" fill="#34d399"/>
+<rect x="165" y="128" width="520" height="22" rx="8" fill="#f8fafc"/><text x="185" y="144" fill="#607086" font-family="Arial,sans-serif" font-size="11">https://example.test/workflow</text>
+<text x="92" y="204" fill="#15243a" font-family="Arial,sans-serif" font-size="22" font-weight="700">Example task page</text>
+<text x="92" y="230" fill="#52647a" font-family="Arial,sans-serif" font-size="14">A replay locates an element using recorded selector and context hints.</text>
+<rect x="92" y="260" width="350" height="52" rx="10" fill="#e8eef7"/><text x="116" y="292" fill="#53657d" font-family="Arial,sans-serif" font-size="15">Search field · recorded input</text>
+<rect x="92" y="338" width="200" height="58" rx="10" fill="#dbeafe" stroke="#60a5fa" stroke-width="2"/><text x="192" y="373" fill="#1e40af" font-family="Arial,sans-serif" font-size="16" text-anchor="middle" font-weight="700">Continue</text>
+<rect x="80" y="326" width="224" height="82" rx="14" fill="none" stroke="#2dd4bf" stroke-width="4" opacity=".8"><animate attributeName="opacity" values=".15;.95;.15" dur="1.8s" repeatCount="indefinite"/></rect>
+<path d="M0 0 L0 27 L8 20 L14 32 L20 29 L14 17 L26 17 Z" fill="#0f172a" stroke="#fff" stroke-width="2" transform="translate(0 0)">
+ <animateMotion dur="4s" repeatCount="indefinite" path="M470 195 C520 200 560 245 500 280 S330 330 190 365"/>
+</path>
+<circle r="18" fill="none" stroke="#2dd4bf" stroke-width="3" opacity="0"><animateMotion dur="4s" repeatCount="indefinite" path="M470 195 C520 200 560 245 500 280 S330 330 190 365"/><animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite"/></circle>
+<rect x="988" y="118" width="398" height="326" rx="18" fill="#102541" stroke="#345579"/>
+<text x="1020" y="162" fill="#5eead4" font-family="Arial,sans-serif" font-size="13" font-weight="700">SATYTRACKER78 · REPLAY STATUS</text>
+<text x="1020" y="205" fill="#f8fafc" font-family="Arial,sans-serif" font-size="23" font-weight="700">Flow in progress</text>
+<text x="1020" y="239" fill="#9fb5d4" font-family="Arial,sans-serif" font-size="14">Current step</text><text x="1350" y="239" fill="#f8fafc" font-family="Arial,sans-serif" font-size="14" text-anchor="end">2 / 4</text>
+<rect x="1020" y="256" width="330" height="10" rx="5" fill="#263f60"/><rect x="1020" y="256" width="165" height="10" rx="5" fill="#2dd4bf"><animate attributeName="width" values="40;330;40" dur="4s" repeatCount="indefinite"/></rect>
+<g font-family="Arial,sans-serif" font-size="14"><text x="1020" y="306" fill="#d9e6f7">✓ Resolve target</text><text x="1020" y="337" fill="#5eead4">● Perform action</text><text x="1020" y="368" fill="#9fb5d4">○ Wait configured delay</text><text x="1020" y="399" fill="#9fb5d4">○ Begin next loop</text></g>
+<rect x="1020" y="414" width="330" height="1" fill="#314b6b"/><text x="1020" y="435" fill="#fbbf24" font-family="Arial,sans-serif" font-size="12">Stop replay remains available in the extension popup.</text>
+</svg>
