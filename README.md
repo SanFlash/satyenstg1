@@ -8,7 +8,7 @@
 
 **A local-first workflow toolkit for authorized browser automation, with an optional Windows desktop companion and a workflow-management dashboard.**
 
-<img src="docs/assets/replay.gif" alt="SatyTracker78 system overview" width="100%">
+<img src="docs/assets/replay-state-machine.svg" alt="SatyTracker78 system overview" width="100%">
 
 [![CI](https://github.com/SanFlash/satyenstg1/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SanFlash/satyenstg1/actions/workflows/ci.yml)
 [![Chrome Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop)
@@ -24,18 +24,18 @@
 
 ## A different view of every part
 
-This documentation uses a **visual language matched to the job**: a system map for architecture, a waveform for recording, a state machine for replay, a permission dial for Windows, and a data journey for the dashboard. The diagrams are not interchangeable decorations; each explains a different mechanism.
+This documentation uses **distinct visual systems** rather than repeating one animation: an architecture map, recording pipeline, replay state machine, permission lifecycle, dashboard lifecycle, security boundary map and CI release flow. Each diagram explains a different mechanism.
 
 > **[Launch the interactive GSAP experience →](docs/interactive-guide/index.html)**  
 > A responsive, full-page product tour with 3D scene transitions, a replay simulator, interactive component views, and section-specific motion.
 
-The README visuals use real animated GIF files committed to this repository. GitHub displays and plays these GIFs directly in Markdown; they do not depend on embedded JavaScript, custom CSS, GSAP, or a third-party image host. The separate HTML guide is an optional richer experience, not a requirement for README animations.
+The README uses purpose-built diagrams for each system area. GitHub Markdown displays these as static visuals; the separate HTML guide is where GSAP, scroll choreography, 3D transforms and interactive controls run. GitHub README pages cannot execute embedded GSAP or custom JavaScript.
 
 ---
 
 ## 01 / Product at a glance
 
-<img src="docs/assets/dashboard.gif" alt="Architecture map separating browser extension, Windows companion and dashboard" width="100%">
+<img src="docs/assets/system-overview.svg" alt="Architecture map separating browser extension, Windows companion and dashboard" width="100%">
 
 SatyTracker78 consists of three related but distinct components:
 
@@ -51,7 +51,7 @@ SatyTracker78 consists of three related but distinct components:
 
 ## 02 / Capture — from interaction to useful context
 
-<img src="docs/assets/recording.gif" alt="Recording pipeline showing event capture, filtering and context enrichment" width="100%">
+<img src="docs/assets/recording-pipeline.svg" alt="Recording pipeline showing event capture, filtering and context enrichment" width="100%">
 
 The recorder focuses on supported DOM interactions rather than screen-video capture. It stores context that can help locate the target again:
 
@@ -84,7 +84,7 @@ A replay cycle follows this sequence:
 
 ## 04 / Windows companion — permission is a lifecycle
 
-<img src="docs/assets/permission.gif" alt="Windows helper permission lifecycle from install through approval, expiry and revocation" width="100%">
+<img src="docs/assets/desktop-permission.svg" alt="Windows helper permission lifecycle from install through approval, expiry and revocation" width="100%">
 
 The optional helper is a self-contained **.NET 8 Windows x64** Native Messaging companion.
 
@@ -101,7 +101,7 @@ The companion is independently installed. Its presence does **not** mean every b
 
 ## 05 / Dashboard — manage definitions, not pretend execution
 
-<img src="docs/assets/dashboard.gif" alt="Dashboard lifecycle from editing and validation to local persistence and blocked queue" width="100%">
+<img src="docs/assets/dashboard-lifecycle.svg" alt="Dashboard lifecycle from editing and validation to local persistence and blocked queue" width="100%">
 
 The React + Vite + TypeScript dashboard currently supports:
 
@@ -119,7 +119,7 @@ The React + Vite + TypeScript dashboard currently supports:
 
 ## 06 / Privacy and security boundaries
 
-<img src="docs/assets/permission.gif" alt="Security boundary diagram showing excluded sensitive fields, permission checks and stop controls" width="100%">
+<img src="docs/assets/security-boundaries.svg" alt="Security boundary diagram showing excluded sensitive fields, permission checks and stop controls" width="100%">
 
 - Sensitive credential, payment and file-upload inputs are excluded from capture.
 - The Windows helper requires explicit local approval and expires that permission.
@@ -131,7 +131,7 @@ The React + Vite + TypeScript dashboard currently supports:
 
 ## 07 / Build and release path
 
-<img src="docs/assets/dashboard.gif" alt="CI and release flow covering checks, packaging and release artifacts" width="100%">
+<img src="docs/assets/ci-release-flow.svg" alt="CI and release flow covering checks, packaging and release artifacts" width="100%">
 
 CI and release documentation: [Deployment guide](docs/DEPLOYMENT.md). Security notes: [Security guide](docs/SECURITY.md). System design: [Architecture guide](docs/ARCHITECTURE.md).
 
