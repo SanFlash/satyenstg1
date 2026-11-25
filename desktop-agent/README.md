@@ -53,7 +53,7 @@ The source project remains in this directory. For development, use the .NET 8 SD
 
 ## Animated desktop-helper flow
 
-<p align="center"><img src="../docs/assets/security-boundaries.svg" alt="Animated desktop permission lifecycle" width="100%"></p>
+<p align="center"><img src="../docs/assets/dashboard-lifecycle.svg" alt="Animated desktop permission lifecycle" width="100%"></p>
 
 The sequence shows the actual documented permission boundary: the helper is installed for the current Windows user, Chrome connects through Native Messaging, and desktop input remains disabled until the local Windows permission dialog is approved. Permission expires after five minutes; Stop or Chrome disconnect revokes it.
 
