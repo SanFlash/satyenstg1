@@ -14,12 +14,13 @@ internal static class Program
     [STAThread]
     private static int Main()
     {
+        Log("Native host process started.");
         try
         {
             while (true)
             {
                 var request = ReadFrame();
-                if (request is null) break;
+                if (request is null) { Log("Native host stdin closed; Chrome disconnected."); break; }
                 using (request)
                 {
                     object response;
@@ -31,7 +32,7 @@ internal static class Program
             return 0;
         }
         catch (Exception ex) { Log("Fatal host error: " + ex); return 2; }
-        finally { lock (Gate) ArmedUntil = DateTimeOffset.MinValue; }
+        finally { lock (Gate) ArmedUntil = DateTimeOffset.MinValue; Log("Native host process stopped; desktop permission revoked."); }
     }
     private static JsonDocument? ReadFrame()
     {
