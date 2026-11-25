@@ -4,6 +4,9 @@ End-user Windows x64 companion for the SatyTracker78 Chrome extension.
 
 ## Install (no developer tools required)
 
+<p align="center"><img src="../docs/assets/desktop-permission.svg" alt="Animated Windows helper installation and permission flow" width="100%"></p>
+
+
 1. Download and extract **SatyTracker78-Windows-Setup.zip** from the latest GitHub Release.
 2. Double-click **Setup-SatyTracker78.cmd**.
 3. When prompted, paste the extension ID shown at chrome://extensions.
@@ -15,9 +18,15 @@ No separate .NET SDK, Python, pip, administrator access, or manual registry edit
 
 ## Uninstall
 
+<p align="center"><img src="../docs/assets/security-boundaries.svg" alt="Animated helper removal and permission boundary" width="100%"></p>
+
+
 Run **Uninstall-SatyTracker78.cmd** from the extracted setup folder. It removes the current user's native messaging registration and installed SatyTracker78 folder, including its local log.
 
 ## Troubleshooting
+
+<p align="center"><img src="../docs/assets/replay-state-machine.svg" alt="Animated native host troubleshooting flow" width="100%"></p>
+
 
 - Confirm the extension ID pasted during setup matches the ID shown at chrome://extensions.
 - Restart all Chrome processes after installation.
@@ -26,9 +35,15 @@ Run **Uninstall-SatyTracker78.cmd** from the extracted setup folder. It removes 
 
 ## Security
 
+<p align="center"><img src="../docs/assets/security-boundaries.svg" alt="Animated desktop security controls" width="100%"></p>
+
+
 Desktop input is disabled until the user approves a local Windows permission dialog. Permission expires after five minutes; Stop or Chrome disconnect revokes it. The helper performs bounded, explicit input actions only. It does not capture screenshots, clipboard contents, passwords, keystrokes, hidden activity, spoof idle/productivity signals, or bypass tracker controls.
 
 ## Developer build
+
+<p align="center"><img src="../docs/assets/ci-release-flow.svg" alt="Animated Windows build and release flow" width="100%"></p>
+
 
 The source project remains in this directory. For development, use the .NET 8 SDK and build-and-install.bat. End users should use the self-contained Windows setup ZIP instead.
 
