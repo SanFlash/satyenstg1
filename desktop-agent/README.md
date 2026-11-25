@@ -31,3 +31,14 @@ Desktop input is disabled until the user approves a local Windows permission dia
 ## Developer build
 
 The source project remains in this directory. For development, use the .NET 8 SDK and build-and-install.bat. End users should use the self-contained Windows setup ZIP instead.
+
+
+## Animated desktop-helper flow
+
+<p align="center"><img src="../docs/assets/desktop-permission.svg" alt="Animated desktop permission lifecycle" width="100%"></p>
+
+The sequence shows the actual documented permission boundary: the helper is installed for the current Windows user, Chrome connects through Native Messaging, and desktop input remains disabled until the local Windows permission dialog is approved. Permission expires after five minutes; Stop or Chrome disconnect revokes it.
+
+<p align="center"><img src="../docs/assets/security-boundaries.svg" alt="Animated security boundaries" width="100%"></p>
+
+The diagrams are documentation visuals, not a live permission monitor. See the [full GSAP product guide](../docs/interactive-guide/index.html) and [repository README](../README.md) for the complete product walkthrough.
