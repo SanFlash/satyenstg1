@@ -1,28 +1,33 @@
-# SatyTracker78 Windows Desktop Agent
+# SatyTracker78 Windows Desktop Helper
 
-Windows x64 Native Messaging host built from transparent .NET 8 source. The published GitHub Actions artifact intentionally contains **source code and batch scripts only**, not a precompiled executable.
+End-user Windows x64 companion for the SatyTracker78 Chrome extension.
 
-## Requirements
-- Windows 10/11 x64
-- Internet access to download the official .NET 8 SDK installer. The build script installs the SDK into `%LOCALAPPDATA%\\SatyTracker78\\dotnet-sdk` for the current user; a system-wide installation is not required.
-- Google Chrome with the SatyTracker78 extension loaded
+## Install (no developer tools required)
 
-## Install
-1. Download the `satytracker78-windows-agent-source` artifact from the latest successful GitHub Actions run and extract it.
-2. Inspect `Program.cs` and `SatyTracker78.Agent.csproj` if desired.
-3. Double-click `build-and-install.bat`. It bootstraps the official .NET 8 SDK into your user profile if needed, compiles the source locally, then starts `install-agent.bat`.
-4. Paste the current extension ID from `chrome://extensions`.
-5. Run `diagnose-agent.ps1` if installation does not complete or the helper does not connect. It checks the Chrome registry entry, manifest, executable, SDK and log without changing settings.
-6. Fully exit Chrome, reopen it, reload SatyTracker78, and choose Connect & enable desktop helper.
-6. Approve the local permission prompt only when you intend to use desktop input.
+1. Download and extract **SatyTracker78-Windows-Setup.zip** from the latest GitHub Release.
+2. Double-click **Setup-SatyTracker78.cmd**.
+3. When prompted, paste the extension ID shown at chrome://extensions.
+4. The installer copies the self-contained helper into the user's LocalAppData SatyTracker78 folder, writes and validates the Native Messaging manifest, and registers it for the current Windows user.
+5. Fully exit and reopen Chrome, reload SatyTracker78, and click **Connect & enable desktop helper**.
+6. Approve the Windows permission dialog only when you intend to allow visible desktop input.
 
-The installer stores the executable under `%LOCALAPPDATA%\SatyTracker78` and registers the Chrome Native Messaging manifest for the exact extension ID. No Python, pip, or pynput is required.
+No separate .NET SDK, Python, pip, administrator access, or manual registry editing is required. The installer is per-user and only registers the exact extension ID entered.
 
-## Protocol and diagnostics
-Chrome Native Messaging uses little-endian 32-bit length-prefixed UTF-8 JSON on stdin/stdout. Logs go to `%LOCALAPPDATA%\SatyTracker78\native-host.log`; stdout is reserved for protocol frames.
+## Uninstall
 
-## Safety
-The agent implements bounded, explicit input actions only after local approval. Permission expires after five minutes and Stop/Chrome disconnect revokes it. It does not capture screenshots, clipboard contents, passwords, keystrokes, or hidden activity; it does not spoof idle/productivity signals or bypass tracker controls.
+Run **Uninstall-SatyTracker78.cmd** from the extracted setup folder. It removes the current user's native messaging registration and installed SatyTracker78 folder, including its local log.
 
-## Reproducible CI verification
-The Windows CI job independently compiles the same source, runs a Native Messaging framing smoke test against the compiled executable, then publishes the source-only distribution bundle.
+## Troubleshooting
+
+- Confirm the extension ID pasted during setup matches the ID shown at chrome://extensions.
+- Restart all Chrome processes after installation.
+- Re-run Setup-SatyTracker78.cmd to repair the helper registration.
+- The log is stored under LocalAppData\SatyTracker78\native-host.log.
+
+## Security
+
+Desktop input is disabled until the user approves a local Windows permission dialog. Permission expires after five minutes; Stop or Chrome disconnect revokes it. The helper performs bounded, explicit input actions only. It does not capture screenshots, clipboard contents, passwords, keystrokes, hidden activity, spoof idle/productivity signals, or bypass tracker controls.
+
+## Developer build
+
+The source project remains in this directory. For development, use the .NET 8 SDK and build-and-install.bat. End users should use the self-contained Windows setup ZIP instead.
