@@ -1,5 +1,8 @@
 # SatyTracker78 Windows Desktop Helper
 
+
+> **GitHub-compatible motion:** the animated GIF diagrams in this guide are real GIF assets stored in `docs/assets/`. They play directly in GitHub's README viewer; no JavaScript, GSAP runtime, or external image service is required.
+
 End-user Windows x64 companion for the SatyTracker78 Chrome extension.
 
 ## Install (no developer tools required)
@@ -31,7 +34,8 @@ Run **Uninstall-SatyTracker78.cmd** from the extracted setup folder. It removes 
 - Confirm the extension ID pasted during setup matches the ID shown at chrome://extensions.
 - Restart all Chrome processes after installation.
 - Re-run Setup-SatyTracker78.cmd to repair the helper registration.
-- The log is stored under LocalAppData\SatyTracker78\native-host.log.
+- The log is stored under LocalAppData\SatyTracker78
+ative-host.log.
 
 ## Security
 
