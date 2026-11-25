@@ -27,9 +27,12 @@ function connectNativeHelper() {
     catch (error) { nativeState.error = error.message || String(error); nativeState.status = "Not connected"; publishNativeState(); reject(error); return; }
     nativePort = port;
     let handshakeComplete = false;
+    let armTimer = null;
+    let timeoutReason = "";
     const handshakeTimer = setTimeout(() => {
       if (handshakeComplete) return;
-      const reason = "Native helper started but did not answer the status handshake within 10 seconds. Run the repair installer and inspect native-host.log.";
+      const reason = "Native helper started but did not answer the status handshake within 10 seconds. Run diagnose-agent.ps1 and inspect native-host.log.";
+      timeoutReason = reason;
       nativeState = { connected: false, armed: false, status: "Connection timed out", error: reason };
       nativePending?.reject(new Error(reason));
       nativePending = null;
@@ -42,24 +45,32 @@ function connectNativeHelper() {
       if (message?.connected) {
         handshakeComplete = true;
         clearTimeout(handshakeTimer);
-        nativeState = { connected: true, armed: false, status: "Connected — requesting local permission…", error: "" };
+        nativeState = { connected: true, armed: false, status: "Connected — approve the Windows permission prompt", error: "" };
         publishNativeState();
+        armTimer = setTimeout(() => {
+          timeoutReason = "The Windows permission prompt was not answered within 120 seconds. Check behind Chrome for the SatyTracker78 permission dialog, then reconnect.";
+          nativePending?.reject(new Error(timeoutReason)); nativePending = null;
+          try { port.disconnect(); } catch {}
+        }, 120000);
         try { port.postMessage({ command: "arm" }); }
         catch (error) { nativePending?.reject(error); nativePending = null; }
         return;
       }
       if (message?.armed) {
+        clearTimeout(armTimer);
         nativeState = { connected: true, armed: true, status: "Connected · permission active for up to 5 minutes", error: "" };
         nativePending?.resolve(nativeState); nativePending = null; publishNativeState(); return;
       }
       if (message?.ok === false) {
+        clearTimeout(armTimer);
         nativeState = { connected: true, armed: false, status: "Connected · permission not granted", error: message.error || "Desktop permission was not granted." };
         nativePending?.resolve(nativeState); nativePending = null; publishNativeState(); return;
       }
     });
     port.onDisconnect.addListener(() => {
       clearTimeout(handshakeTimer);
-      const reason = chrome.runtime.lastError?.message || "Chrome could not communicate with the native helper.";
+      clearTimeout(armTimer);
+      const reason = timeoutReason || chrome.runtime.lastError?.message || "Chrome could not communicate with the native helper.";
       nativePort = null;
       nativeState = { connected: false, armed: false, status: "Not connected", error: reason };
       nativePending?.reject(new Error(reason)); nativePending = null; publishNativeState();
