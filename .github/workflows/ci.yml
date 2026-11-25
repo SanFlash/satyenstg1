@@ -51,6 +51,7 @@ jobs:
           Copy-Item desktop-agent/Program.cs desktop-agent/distribution/
           Copy-Item desktop-agent/build-and-install.bat desktop-agent/distribution/
           Copy-Item desktop-agent/setup-dotnet-sdk.ps1 desktop-agent/distribution/
+          Copy-Item desktop-agent/diagnose-agent.ps1 desktop-agent/distribution/
           Copy-Item desktop-agent/install-agent.bat desktop-agent/distribution/
           Copy-Item desktop-agent/uninstall-agent.bat desktop-agent/distribution/
           Copy-Item desktop-agent/README.md desktop-agent/distribution/
