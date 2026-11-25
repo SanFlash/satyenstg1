@@ -26,7 +26,31 @@
 
   document.addEventListener("click",e=>{const t=e.target instanceof Element?e.target:e.target?.parentElement;const el=t?.closest('button,a,[role="button"],[role="link"],[role="menuitem"],[role="tab"],[role="option"],[role="checkbox"],[role="radio"],[role="switch"],[role="treeitem"],input[type="button"],input[type="submit"],summary,[data-testid]');if(el)record("click",el);},true);
   document.addEventListener("change",e=>{const el=e.target;if(el instanceof HTMLSelectElement||el instanceof HTMLInputElement&&["checkbox","radio"].includes(el.type))record("input",el);},true);
-  document.addEventListener("input",e=>{const el=e.target;if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement||el instanceof HTMLElement&&el.isContentEditable)||privateEl(el))return;if(el instanceof HTMLInputElement&&!["text","search","email","url","tel","number"].includes(el.type))return;clearTimeout(el.__mfTimer);el.__mfTimer=setTimeout(()=>record("input",el),450);},true);
+  const pendingInputs = new Map();
+  const flushInput = el => {
+    const pending = pendingInputs.get(el);
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    pendingInputs.delete(el);
+    record("input", el);
+  };
+  document.addEventListener("input",e=>{
+    const el=e.target;
+    if(!(el instanceof HTMLInputElement||el instanceof HTMLTextAreaElement||el instanceof HTMLElement&&el.isContentEditable)||privateEl(el))return;
+    if(el instanceof HTMLInputElement&&!["text","search","email","url","tel","number"].includes(el.type))return;
+    const previous=pendingInputs.get(el);
+    if(previous)clearTimeout(previous.timer);
+    const timer=setTimeout(()=>flushInput(el),350);
+    pendingInputs.set(el,{timer});
+  },true);
+  document.addEventListener("click",e=>{
+    const target=e.target instanceof Element?e.target:e.target?.parentElement;
+    if(!target)return;
+    for(const el of [...pendingInputs.keys()])if(el===target||el.contains(target)||target.contains(el))flushInput(el);
+  },true);
+  window.addEventListener("pagehide",()=>{
+    for(const el of [...pendingInputs.keys()])flushInput(el);
+  },{capture:true});
   // Capture one settled scroll position instead of flooding the flow with every scroll frame.
   let scrollCaptureTimer = 0;
   document.addEventListener("scroll",e=>{
